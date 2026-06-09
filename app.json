@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "名古屋市サービス検索",
+    "slug": "NagoyaApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d9746670-40bc-4d05-bbb4-abece4ebeae8",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "jp.nagoya.serviceapp2"
+    },
+    "android": {
+      "package": "jp.nagoya.serviceapp2",
+      "adaptiveIcon": {
+        "backgroundColor": "#0C447C"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d9746670-40bc-4d05-bbb4-abece4ebeae8"
+      }
+    },
+    "owner": "gaojianmingzi19",
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-updates"
+    ]
+  }
+}
