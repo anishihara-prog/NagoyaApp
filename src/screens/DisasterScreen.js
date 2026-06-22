@@ -120,11 +120,11 @@ export default function DisasterScreen({ navigation, route }) {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.toolCard} onPress={() => openURL('https://www.city.nagoya.jp/bousaikikikanri/page/0000171223.html')} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.toolCard} onPress={() => openURL('https://www.city.nagoya.jp/bousaiportal/jouhou/1036432/1013386.html')} activeOpacity={0.8}>
             <View style={styles.toolCardLeft}>
               <Ionicons name="mail" size={18} color="#1565C0" />
               <View>
-                <Text style={styles.toolCardTitle}>なごやメール配信サービス</Text>
+                <Text style={styles.toolCardTitle}>きずなネット防災情報</Text>
                 <Text style={styles.toolCardSub}>避難情報・気象警報をメールで受信</Text>
               </View>
             </View>
