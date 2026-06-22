@@ -7,6 +7,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
 import { CAT_LABELS, CAT_COLORS } from '../data/services';
 import { useServices } from '../context/ServicesContext';
+import { DISTRICT_LIST, DISTRICTS } from '../data/districts';
+
+// 【対象】行から年齢・対象者情報を抽出
+function getAgeLabel(detail) {
+  if (!detail) return null;
+  const m = detail.match(/【対象[^】]*】([^\n]+)/);
+  if (!m) return null;
+  const t = m[1].trim();
+  return t.length > 32 ? t.slice(0, 32) + '…' : t;
+}
 
 const CATS = ['all', 'child', 'health', 'emergency', 'welfare', 'housing', 'work', 'money', 'elderly'];
 
@@ -152,6 +162,28 @@ export default function ResultsScreen({ navigation, route }) {
 
       <ScrollView showsVerticalScrollIndicator={false}>
 
+        {/* 区別防災情報バナー */}
+        {profile.district && (() => {
+          const d = DISTRICTS[profile.district];
+          const dName = DISTRICT_LIST.find(x => x.key === profile.district)?.name || '';
+          return (
+            <TouchableOpacity
+              style={styles.disasterBanner}
+              onPress={() => navigation.navigate('Disaster', { districtKey: profile.district, profile })}
+              activeOpacity={0.8}
+            >
+              <View style={styles.disasterBannerLeft}>
+                <Ionicons name="warning" size={18} color="#B71C1C" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.disasterBannerTitle}>{dName}の防災情報を確認する</Text>
+                  <Text style={styles.disasterBannerRisks}>{d?.risks?.join('・')}リスクあり</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#B71C1C" />
+            </TouchableOpacity>
+          );
+        })()}
+
         {activeCat === 'all' ? (
           // グループ表示
           <View style={styles.list}>
@@ -234,6 +266,7 @@ export default function ResultsScreen({ navigation, route }) {
 function ServiceCard({ svc, onPress }) {
   const catColor = CAT_COLORS[svc.cat] || { bg: colors.bgSecondary, text: colors.textSecondary };
   const isEmergency = svc.cat === 'emergency';
+  const ageLabel = getAgeLabel(svc.detail);
   return (
     <TouchableOpacity style={[styles.card, svc.urgent && !isEmergency && styles.cardUrgent, isEmergency && styles.cardEmergency]} onPress={onPress} activeOpacity={0.75}>
       <View style={styles.badgeRow}>
@@ -251,6 +284,12 @@ function ServiceCard({ svc, onPress }) {
           </View>
         )}
       </View>
+      {ageLabel && (
+        <View style={styles.ageBadge}>
+          <Ionicons name="people-outline" size={11} color="#1565C0" />
+          <Text style={styles.ageBadgeText}>{ageLabel}</Text>
+        </View>
+      )}
       <View style={styles.cardTitleRow}>
         {isEmergency && <Ionicons name="warning" size={15} color="#B71C1C" style={{ marginRight: 4, marginTop: 1 }} />}
         {svc.urgent && !isEmergency && <Ionicons name="alert-circle" size={15} color={colors.accent} style={{ marginRight: 4, marginTop: 1 }} />}
@@ -314,6 +353,12 @@ const styles = StyleSheet.create({
   cardLink: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
   empty: { alignItems: 'center', paddingVertical: 48, gap: 12 },
   emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  disasterBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: 4, backgroundColor: '#FFFAFA', borderRadius: radius.lg, padding: 12, borderWidth: 1, borderColor: '#FFCDD2' },
+  disasterBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  disasterBannerTitle: { fontSize: 13, fontWeight: font.semibold, color: '#B71C1C', marginBottom: 2 },
+  disasterBannerRisks: { fontSize: 11, color: '#C62828' },
+  ageBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E3F0FB', borderRadius: radius.full, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, marginBottom: 7 },
+  ageBadgeText: { fontSize: 10, color: '#1565C0', fontWeight: font.medium },
   fabWrap: { position: 'absolute', bottom: 20, right: 16, gap: 8, alignItems: 'flex-end' },
   fab: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: colors.primaryMid, borderRadius: radius.full, paddingVertical: 13, paddingHorizontal: 18 },
   fabText: { fontSize: 14, fontWeight: font.semibold, color: '#fff' },

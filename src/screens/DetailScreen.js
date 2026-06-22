@@ -21,7 +21,24 @@ export default function DetailScreen({ navigation, route }) {
     }
   };
 
-  const detailLines = svc.detail.split('\n');
+  // URL が空・未設定の場合は名古屋市トップページへフォールバック
+  const officialUrl = (svc.url && svc.url.startsWith('http'))
+    ? svc.url
+    : 'https://www.city.nagoya.jp/';
+
+  const detailLines = (svc.detail || '').split('\n');
+
+  // 対象者情報を detail から抽出（年齢確認用）
+  const ageTargets = (() => {
+    if (!svc.detail) return [];
+    const results = [];
+    const re = /【対象[^】]*】([^\n]+)/g;
+    let m;
+    while ((m = re.exec(svc.detail)) !== null) {
+      results.push(m[0].replace(/【([^】]+)】/, '[$1] '));
+    }
+    return results;
+  })();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -61,6 +78,19 @@ export default function DetailScreen({ navigation, route }) {
           <Text style={styles.title}>{svc.title}</Text>
           <Text style={styles.desc}>{svc.desc}</Text>
         </View>
+
+        {/* 対象者・年齢要件 */}
+        {ageTargets.length > 0 && (
+          <View style={styles.ageCard}>
+            <View style={styles.ageCardHeader}>
+              <Ionicons name="people" size={15} color="#1565C0" />
+              <Text style={styles.ageCardTitle}>対象者・年齢要件</Text>
+            </View>
+            {ageTargets.map((t, i) => (
+              <Text key={i} style={styles.ageCardText}>{t}</Text>
+            ))}
+          </View>
+        )}
 
         {/* グレーゾーン向け説明 */}
         {svc.grayzone && (
@@ -114,7 +144,7 @@ export default function DetailScreen({ navigation, route }) {
 
         <TouchableOpacity
           style={styles.linkBtn}
-          onPress={() => openURL(svc.url)}
+          onPress={() => openURL(officialUrl)}
           activeOpacity={0.8}
         >
           <Ionicons name="globe-outline" size={16} color={colors.primary} />
@@ -154,6 +184,14 @@ const styles = StyleSheet.create({
   urgentText: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
   title: { fontSize: 20, fontWeight: font.semibold, color: colors.textPrimary, lineHeight: 28, marginBottom: 8 },
   desc: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+  ageCard: {
+    margin: spacing.lg, marginTop: 0, marginBottom: spacing.md,
+    backgroundColor: '#E3F0FB', borderRadius: radius.lg, padding: 14,
+    borderLeftWidth: 3, borderLeftColor: '#1565C0',
+  },
+  ageCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 7 },
+  ageCardTitle: { fontSize: 13, fontWeight: font.semibold, color: '#1565C0' },
+  ageCardText: { fontSize: 12, color: '#0D3B66', lineHeight: 20 },
   grayCard: {
     margin: spacing.lg, marginTop: 4, marginBottom: 0,
     backgroundColor: '#F3EAFA', borderRadius: radius.lg, padding: 14,

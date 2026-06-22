@@ -1,37 +1,19 @@
-import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
-import { Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import * as Updates from 'expo-updates';
+import 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ServicesProvider } from './src/context/ServicesContext';
+import ChatScreen from './src/screens/ChatScreen';
+import DetailScreen from './src/screens/DetailScreen';
+import DisasterScreen from './src/screens/DisasterScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
-import DetailScreen from './src/screens/DetailScreen';
-import ChatScreen from './src/screens/ChatScreen';
-import DisasterScreen from './src/screens/DisasterScreen';
-import { ServicesProvider } from './src/context/ServicesContext';
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  useEffect(() => {
-    if (!__DEV__) {
-      Updates.checkForUpdateAsync().then(({ isAvailable }) => {
-        if (isAvailable) {
-          Updates.fetchUpdateAsync().then(() => {
-            Alert.alert(
-              'アップデート完了',
-              '新しいバージョンを読み込みます。',
-              [{ text: 'OK', onPress: () => Updates.reloadAsync() }]
-            );
-          });
-        }
-      });
-    }
-  }, []);
 
   return (
     <ServicesProvider>
