@@ -65,7 +65,7 @@ export default function ChatScreen({ navigation, route }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'REMOVED',
+          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '',
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({

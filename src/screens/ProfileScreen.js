@@ -292,6 +292,14 @@ export default function ProfileScreen({ navigation }) {
               ['防災・災害への備え','disaster'],
               ['外国人・多文化共生','foreign'],
               ['消費生活・詐欺被害','consumer'],
+              ['不妊・不育症のこと','infertility'],
+              ['認知症のこと','dementia'],
+              ['感染症・予防接種のこと','vaccination'],
+              ['行政手続き・証明のこと','admin'],
+              ['税・国民年金のこと','tax'],
+              ['ごみ・リサイクルのこと','waste'],
+              ['交通・移動のこと','transport'],
+              ['ペット・動物のこと','pet'],
             ].map(([l,v]) => (
               <TB key={v} label={l} active={concerns.includes(v)} onPress={() => togConcern(v)} style={styles.tAuto} />
             ))}

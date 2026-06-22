@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { ServicesProvider } from './src/context/ServicesContext';
 import ChatScreen from './src/screens/ChatScreen';
 import DetailScreen from './src/screens/DetailScreen';
 import DisasterScreen from './src/screens/DisasterScreen';
@@ -16,7 +15,6 @@ const Stack = createStackNavigator();
 export default function App() {
 
   return (
-    <ServicesProvider>
     <SafeAreaProvider>
       <NavigationContainer>
         <StatusBar style="dark" />
@@ -35,6 +33,5 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
-    </ServicesProvider>
   );
 }

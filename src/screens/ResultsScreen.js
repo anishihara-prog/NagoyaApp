@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
-import { CAT_LABELS, CAT_COLORS } from '../data/services';
-import { useServices } from '../context/ServicesContext';
+import { SERVICES, CAT_LABELS, CAT_COLORS } from '../data/services';
 import { DISTRICT_LIST, DISTRICTS } from '../data/districts';
 
 // 【対象】行から年齢・対象者情報を抽出
@@ -18,24 +17,13 @@ function getAgeLabel(detail) {
   return t.length > 32 ? t.slice(0, 32) + '…' : t;
 }
 
-const CATS = ['all', 'child', 'health', 'emergency', 'welfare', 'housing', 'work', 'money', 'elderly'];
+const CATS = ['all', 'child', 'health', 'emergency', 'disaster', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
 
 export default function ResultsScreen({ navigation, route }) {
   const { profile } = route.params;
   const [activeCat, setActiveCat] = useState('all');
-  const { services, loading } = useServices();
 
-  const matched = useMemo(() => services.filter((s) => s.cond(profile)), [services, profile]);
-
-  // データ取得中はローディング表示
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]} edges={['top']}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 12, color: colors.textSecondary, fontSize: 13 }}>サービス情報を取得中...</Text>
-      </SafeAreaView>
-    );
-  }
+  const matched = useMemo(() => SERVICES.filter((s) => s.cond(profile)), [profile]);
 
   // 対象年齢チェック関数
   const isAgeMatch = (svc, profile) => {
@@ -69,13 +57,21 @@ export default function ResultsScreen({ navigation, route }) {
       disability_service: ['welfare', 'work'],
       hikikomori_concern: ['welfare', 'health'],
       dv:                 ['welfare', 'housing'],
-      disaster:           ['emergency'],
+      disaster:           ['emergency', 'disaster'],
       foreign:            ['welfare'],
       consumer:           ['welfare'],
+      infertility:        ['health'],
+      dementia:           ['elderly'],
+      vaccination:        ['health'],
+      admin:              ['admin'],
+      tax:                ['money', 'admin'],
+      waste:              ['admin'],
+      transport:          ['elderly', 'welfare', 'admin'],
+      pet:                ['admin'],
     };
     return concerns.some(c => {
       const cats = catMap[c] || [];
-      return cats.includes(svc.cat) || svc.cat === 'emergency';
+      return cats.includes(svc.cat) || svc.cat === 'emergency' || svc.cat === 'disaster' || svc.cat === 'admin';
     });
   };
 
@@ -85,9 +81,10 @@ export default function ResultsScreen({ navigation, route }) {
       .filter(s => isAgeMatch(s, profile))
       .filter(s => concernMatch(s, profile.concerns));
     const emergency = valid.filter(s => s.cat === 'emergency');
-    const forChild = valid.filter(s => s.cat !== 'emergency' && s.target === 'child');
-    const forAdult = valid.filter(s => s.cat !== 'emergency' && (s.target === 'adult' || s.target === 'both' || !s.target));
-    return { emergency, forChild, forAdult };
+    const disaster = valid.filter(s => s.cat === 'disaster');
+    const forChild = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.target === 'child');
+    const forAdult = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && (s.target === 'adult' || s.target === 'both' || !s.target));
+    return { emergency, disaster, forChild, forAdult };
   }, [matched, profile]);
 
   const filtered = useMemo(() => {
@@ -118,6 +115,8 @@ export default function ResultsScreen({ navigation, route }) {
       nursing: '介護', work: '就労', money: 'お金', housing_concern: '住まい',
       health: '健康', mental_health: 'メンタル', disability_service: '障害福祉',
       hikikomori_concern: 'ひきこもり', dv: 'DV・虐待', disaster: '防災', foreign: '外国人', consumer: '消費生活',
+      infertility: '不妊・不育症', dementia: '認知症', vaccination: '予防接種',
+      admin: '行政手続き', tax: '税・年金', waste: 'ごみ', transport: '交通・移動', pet: 'ペット',
     };
     profile.concerns?.forEach(v => { if (cm[v]) p.push(cm[v]); });
     return p;
@@ -151,11 +150,11 @@ export default function ResultsScreen({ navigation, route }) {
         {CATS.map(cat => (
           <TouchableOpacity
             key={cat}
-            style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive]}
+            style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive, cat === 'disaster' && styles.filterChipDisaster, activeCat === cat && cat === 'disaster' && styles.filterChipDisasterActive, cat === 'admin' && styles.filterChipAdmin, activeCat === cat && cat === 'admin' && styles.filterChipAdminActive]}
             onPress={() => setActiveCat(cat)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency]}>{CAT_LABELS[cat] || cat}</Text>
+            <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency, cat === 'disaster' && styles.filterChipTextDisaster, cat === 'admin' && styles.filterChipTextAdmin]}>{CAT_LABELS[cat] || cat}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -196,6 +195,19 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{categorized.emergency.length}件</Text>
                 </View>
                 {categorized.emergency.map(svc => (
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                ))}
+              </View>
+            )}
+            {/* 防災・備え */}
+            {categorized.disaster.length > 0 && (
+              <View>
+                <View style={styles.groupHeader}>
+                  <Ionicons name="home" size={15} color="#E65100" />
+                  <Text style={[styles.groupTitle, {color:'#E65100'}]}>防災・備え</Text>
+                  <Text style={styles.groupCount}>{categorized.disaster.length}件</Text>
+                </View>
+                {categorized.disaster.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
                 ))}
               </View>
@@ -327,9 +339,15 @@ const styles = StyleSheet.create({
   filterChipActive: { borderColor: colors.accent, backgroundColor: colors.primaryBg },
   filterChipEmergency: { borderColor: '#FFCDD2', backgroundColor: '#FFF5F5' },
   filterChipEmergencyActive: { borderColor: '#B71C1C', backgroundColor: '#FDECEA' },
+  filterChipDisaster: { borderColor: '#FFCC80', backgroundColor: '#FFFDE7' },
+  filterChipDisasterActive: { borderColor: '#E65100', backgroundColor: '#FFF3E0' },
   filterChipText: { fontSize: 12, color: colors.textSecondary },
   filterChipTextActive: { color: colors.primary, fontWeight: font.medium },
   filterChipTextEmergency: { color: '#B71C1C' },
+  filterChipTextDisaster: { color: '#E65100' },
+  filterChipAdmin: { borderColor: '#A5D6A7', backgroundColor: '#F1F8E9' },
+  filterChipAdminActive: { borderColor: '#1B5E20', backgroundColor: '#E8F5E9' },
+  filterChipTextAdmin: { color: '#1B5E20' },
   list: { padding: spacing.lg, gap: 8, paddingBottom: 20 },
   groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, marginTop: 8, paddingBottom: 8, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   groupTitle: { flex: 1, fontSize: 14, fontWeight: font.semibold, color: colors.primary },
