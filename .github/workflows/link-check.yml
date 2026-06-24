@@ -1,86 +1,116 @@
-name: 名古屋市HPリンク切れ検知
+name: 名古屋市HPリンク切れ・内容変更検知
 
 on:
   schedule:
     - cron: '0 1 * * 1'  # 毎週月曜 10:00 JST (= UTC 01:00)
-  workflow_dispatch:       # 手動実行も可能
+  workflow_dispatch:
 
 jobs:
   check-links:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: read
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - name: リンクチェック実行
-        id: check
+      # ── 1. リンク切れチェック ──────────────────────────
+      - name: リンク切れチェック
+        id: links
         run: |
-          node scripts/check-links.js 2>&1 | tee result.txt
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          node scripts/check-links.js 2>&1 | tee links-result.txt
+          CODE=${PIPESTATUS[0]}
+          if [ $CODE -eq 1 ]; then
             echo "broken=true" >> $GITHUB_OUTPUT
           else
             echo "broken=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: リンク切れをIssueに登録
-        if: steps.check.outputs.broken == 'true'
+      # ── 2. ページ内容変更チェック ──────────────────────
+      - name: ページ内容変更チェック
+        id: content
+        run: |
+          node scripts/check-links.js --content 2>&1 | tee content-result.txt
+          CODE=${PIPESTATUS[0]}
+          if [ $CODE -eq 2 ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # ── 3. スナップショットをリポジトリにコミット ──────
+      - name: スナップショット更新をコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/url-snapshots.json
+          git diff --cached --quiet || git commit -m "chore: URLスナップショット更新 $(date +'%Y-%m-%d')"
+          git push
+
+      # ── 4. 問題があれば Issue に登録 ───────────────────
+      - name: 問題をIssueに登録
+        if: steps.links.outputs.broken == 'true' || steps.content.outputs.changed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const result = fs.readFileSync('result.txt', 'utf8');
             const date = new Date().toLocaleDateString('ja-JP', {
               timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'
             });
 
-            // link-check ラベルがなければ作成
-            try {
-              await github.rest.issues.getLabel({
-                owner: context.repo.owner, repo: context.repo.repo, name: 'link-check',
-              });
-            } catch {
-              await github.rest.issues.createLabel({
-                owner: context.repo.owner, repo: context.repo.repo,
-                name: 'link-check', color: 'D93F0B', description: '名古屋市HPリンク切れ検知',
-              });
+            // ラベル確認・作成
+            for (const [name, color, desc] of [
+              ['link-check', 'D93F0B', 'リンク切れ検知'],
+              ['content-change', '0075CA', 'ページ内容変更検知'],
+            ]) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name });
+              } catch {
+                await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name, color, description: desc });
+              }
             }
 
-            // 同じラベルの未解決Issueがあればコメント追加、なければ新規作成
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'link-check',
-            });
+            // Issue 本文を組み立て
+            const sections = [];
+            const labels = [];
 
-            const body = `## ${date} 検知結果\n\n\`\`\`\n${result}\n\`\`\`\n\n_GitHub Actions 自動検知 — services.js の URL を確認してください_`;
+            if ('${{ steps.links.outputs.broken }}' === 'true') {
+              const txt = fs.readFileSync('links-result.txt', 'utf8');
+              sections.push(`## ❌ リンク切れ\n\n\`\`\`\n${txt}\n\`\`\``);
+              labels.push('link-check');
+            }
+            if ('${{ steps.content.outputs.changed }}' === 'true') {
+              const txt = fs.readFileSync('content-result.txt', 'utf8');
+              sections.push(`## 🔄 ページ内容変更\n\nservices.js の該当URLを確認して、説明文・詳細・URL を最新情報に更新してください。\n\n\`\`\`\n${txt}\n\`\`\``);
+              labels.push('content-change');
+            }
+
+            const body = sections.join('\n\n') + '\n\n_GitHub Actions 自動検知_';
+            const title = `[HP変更検知] ${date}`;
+
+            // 既存オープンIssueがあればコメント追加
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: labels[0],
+            });
 
             if (issues.length > 0) {
               await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issues[0].number,
-                body,
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issues[0].number, body,
               });
-              console.log(`既存Issue #${issues[0].number} にコメントを追加しました`);
             } else {
-              const { data: issue } = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `[リンク切れ] 名古屋市HP変更検知 ${date}`,
-                body,
-                labels: ['link-check'],
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels,
               });
-              console.log(`Issue #${issue.number} を作成しました`);
             }
 
       - name: 正常終了ログ
-        if: steps.check.outputs.broken == 'false'
-        run: echo "全URLが正常です。Issueは作成しません。"
+        if: steps.links.outputs.broken == 'false' && steps.content.outputs.changed == 'false'
+        run: echo "リンク切れ・内容変更ともに検知なし。"
