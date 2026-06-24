@@ -17,7 +17,7 @@ function getAgeLabel(detail) {
   return t.length > 32 ? t.slice(0, 32) + '…' : t;
 }
 
-const CATS = ['all', 'child', 'health', 'emergency', 'disaster', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
+const CATS = ['all', 'child', 'health', 'mental', 'emergency', 'disaster', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
 
 export default function ResultsScreen({ navigation, route }) {
   const { profile } = route.params;
@@ -33,8 +33,8 @@ export default function ResultsScreen({ navigation, route }) {
     if (svc.id === 3) return childAges.some(a => a <= 5);
     if (svc.id === 4) return childAges.some(a => a <= 5);
     if (svc.id === 5) return childAges.some(a => a >= 6 && a <= 12);
-    if (svc.id === 14) return parseInt(profile.age) >= 40 && parseInt(profile.age) <= 74;
-    if (svc.id === 15) return parseInt(profile.age) >= 20;
+    if (svc.id === 14) return (parseInt(profile.age) >= 40 && parseInt(profile.age) <= 74) || profile.concerns?.includes('health');
+    if (svc.id === 15) return parseInt(profile.age) >= 20 || profile.concerns?.includes('health');
     if (svc.id === 16) return parseInt(profile.age) >= 65 || profile.elderlyMembers?.length > 0;
     if (svc.id === 13) return parseInt(profile.age) >= 65 || profile.elderlyMembers?.length > 0;
     return true;
@@ -53,7 +53,7 @@ export default function ResultsScreen({ navigation, route }) {
       money:              ['money', 'welfare', 'housing'],
       housing_concern:    ['housing', 'welfare'],
       health:             ['health', 'emergency'],
-      mental_health:      ['health', 'welfare'],
+      mental_health:      ['mental', 'welfare'],
       disability_service: ['welfare', 'work'],
       hikikomori_concern: ['welfare', 'health'],
       dv:                 ['welfare', 'housing'],
@@ -150,11 +150,11 @@ export default function ResultsScreen({ navigation, route }) {
         {CATS.map(cat => (
           <TouchableOpacity
             key={cat}
-            style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive, cat === 'disaster' && styles.filterChipDisaster, activeCat === cat && cat === 'disaster' && styles.filterChipDisasterActive, cat === 'admin' && styles.filterChipAdmin, activeCat === cat && cat === 'admin' && styles.filterChipAdminActive]}
+            style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive, cat === 'disaster' && styles.filterChipDisaster, activeCat === cat && cat === 'disaster' && styles.filterChipDisasterActive, cat === 'admin' && styles.filterChipAdmin, activeCat === cat && cat === 'admin' && styles.filterChipAdminActive, cat === 'mental' && styles.filterChipMental, activeCat === cat && cat === 'mental' && styles.filterChipMentalActive]}
             onPress={() => setActiveCat(cat)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency, cat === 'disaster' && styles.filterChipTextDisaster, cat === 'admin' && styles.filterChipTextAdmin]}>{CAT_LABELS[cat] || cat}</Text>
+            <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency, cat === 'disaster' && styles.filterChipTextDisaster, cat === 'admin' && styles.filterChipTextAdmin, cat === 'mental' && styles.filterChipTextMental]}>{CAT_LABELS[cat] || cat}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -195,7 +195,7 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{categorized.emergency.length}件</Text>
                 </View>
                 {categorized.emergency.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
             )}
@@ -208,7 +208,7 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{categorized.disaster.length}件</Text>
                 </View>
                 {categorized.disaster.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
             )}
@@ -221,7 +221,7 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{categorized.forAdult.length}件</Text>
                 </View>
                 {categorized.forAdult.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
             )}
@@ -234,7 +234,7 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{categorized.forChild.length}件</Text>
                 </View>
                 {categorized.forChild.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
             )}
@@ -249,7 +249,7 @@ export default function ResultsScreen({ navigation, route }) {
               </View>
             ) : (
               filtered.map(svc => (
-                <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svc })} />
+                <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
               ))
             )}
           </View>
@@ -348,6 +348,9 @@ const styles = StyleSheet.create({
   filterChipAdmin: { borderColor: '#A5D6A7', backgroundColor: '#F1F8E9' },
   filterChipAdminActive: { borderColor: '#1B5E20', backgroundColor: '#E8F5E9' },
   filterChipTextAdmin: { color: '#1B5E20' },
+  filterChipMental: { borderColor: '#CE93D8', backgroundColor: '#FCF4FF' },
+  filterChipMentalActive: { borderColor: '#6A1B9A', backgroundColor: '#F3E5F5' },
+  filterChipTextMental: { color: '#6A1B9A' },
   list: { padding: spacing.lg, gap: 8, paddingBottom: 20 },
   groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, marginTop: 8, paddingBottom: 8, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   groupTitle: { flex: 1, fontSize: 14, fontWeight: font.semibold, color: colors.primary },

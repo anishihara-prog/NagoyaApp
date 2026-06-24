@@ -1,0 +1,86 @@
+name: 名古屋市HPリンク切れ検知
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'  # 毎週月曜 10:00 JST (= UTC 01:00)
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: リンクチェック実行
+        id: check
+        run: |
+          node scripts/check-links.js 2>&1 | tee result.txt
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "broken=true" >> $GITHUB_OUTPUT
+          else
+            echo "broken=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: リンク切れをIssueに登録
+        if: steps.check.outputs.broken == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const result = fs.readFileSync('result.txt', 'utf8');
+            const date = new Date().toLocaleDateString('ja-JP', {
+              timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'
+            });
+
+            // link-check ラベルがなければ作成
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner, repo: context.repo.repo, name: 'link-check',
+              });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner, repo: context.repo.repo,
+                name: 'link-check', color: 'D93F0B', description: '名古屋市HPリンク切れ検知',
+              });
+            }
+
+            // 同じラベルの未解決Issueがあればコメント追加、なければ新規作成
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'link-check',
+            });
+
+            const body = `## ${date} 検知結果\n\n\`\`\`\n${result}\n\`\`\`\n\n_GitHub Actions 自動検知 — services.js の URL を確認してください_`;
+
+            if (issues.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body,
+              });
+              console.log(`既存Issue #${issues[0].number} にコメントを追加しました`);
+            } else {
+              const { data: issue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[リンク切れ] 名古屋市HP変更検知 ${date}`,
+                body,
+                labels: ['link-check'],
+              });
+              console.log(`Issue #${issue.number} を作成しました`);
+            }
+
+      - name: 正常終了ログ
+        if: steps.check.outputs.broken == 'false'
+        run: echo "全URLが正常です。Issueは作成しません。"

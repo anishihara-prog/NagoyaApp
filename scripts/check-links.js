@@ -100,9 +100,13 @@ async function main() {
       for (const f of uniqueFiles) console.log(`       → src/${f}`);
       console.log('');
     }
+    return true;
   } else {
     console.log('\n全てのリンクが正常です！');
+    return false;
   }
 }
 
-main().catch(console.error);
+main().then(hasBroken => {
+  if (hasBroken) process.exit(1);
+}).catch(err => { console.error(err); process.exit(1); });

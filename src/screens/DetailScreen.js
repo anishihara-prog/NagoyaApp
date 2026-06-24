@@ -6,10 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
-import { CAT_LABELS, CAT_COLORS } from '../data/services';
+import { SERVICES, CAT_LABELS, CAT_COLORS } from '../data/services';
 
 export default function DetailScreen({ navigation, route }) {
-  const { svc } = route.params;
+  const { svcId } = route.params;
+  const svc = SERVICES.find(s => s.id === svcId);
   const catColor = CAT_COLORS[svc.cat] || { bg: colors.bgSecondary, text: colors.textSecondary };
 
   const openURL = async (url) => {
@@ -152,6 +153,18 @@ export default function DetailScreen({ navigation, route }) {
           <Ionicons name="open-outline" size={14} color={colors.primary} />
         </TouchableOpacity>
 
+        {svc.externalUrl && (
+          <TouchableOpacity
+            style={styles.externalLinkBtn}
+            onPress={() => openURL(svc.externalUrl)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="exit-outline" size={16} color="#6A1B9A" />
+            <Text style={styles.externalLinkBtnText}>外部サイトで詳細を見る</Text>
+            <Ionicons name="open-outline" size={14} color="#6A1B9A" />
+          </TouchableOpacity>
+        )}
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
@@ -230,4 +243,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14, borderWidth: 0.5, borderColor: colors.border,
   },
   linkBtnText: { fontSize: 14, fontWeight: font.semibold, color: colors.primary },
+  externalLinkBtn: {
+    marginHorizontal: spacing.lg, marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 7, backgroundColor: '#F3E5F5', borderRadius: radius.lg,
+    paddingVertical: 14, borderWidth: 0.5, borderColor: '#CE93D8',
+  },
+  externalLinkBtnText: { fontSize: 14, fontWeight: font.semibold, color: '#6A1B9A' },
 });
