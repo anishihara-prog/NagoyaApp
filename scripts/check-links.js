@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // URLリンク切れ＋ページ内容変更チェック
 // 使い方:
-//   node scripts/check-links.js           → リンク切れ(404)チェック
-//   node scripts/check-links.js --content → ページ内容変更チェック
+//   node scripts/check-links.js             → リンク切れ(404)チェック
+//   node scripts/check-links.js --content   → ページ内容変更チェック
+//   node scripts/check-links.js --categories → トップページ主要タブの項目追加/変更/削除チェック
+//   各モードに --json-out <file> を付けると、結果を機械可読なJSONとしても書き出す
+//   （scripts/export-excel.js がこれを読んでExcelレポートを組み立てる）
 
 const fs = require('fs');
 const path = require('path');
@@ -12,11 +15,20 @@ const crypto = require('crypto');
 
 const SRC_DIR = path.join(__dirname, '../src');
 const SNAPSHOT_FILE = path.join(__dirname, '../.github/url-snapshots.json');
+const CATEGORY_SNAPSHOT_FILE = path.join(__dirname, '../.github/category-snapshots.json');
 
 const SKIP_PATTERNS = [
   /api\.anthropic\.com/,
   /apps\.apple\.com/,
   /play\.google\.com/,
+];
+
+// 名古屋市トップページの主要タブ（この配下の項目の追加/変更/削除を検知する）
+const CATEGORY_HUB_URLS = [
+  { label: '防災・安全安心', url: 'https://www.city.nagoya.jp/bousai/index.html' },
+  { label: 'くらし・手続き', url: 'https://www.city.nagoya.jp/kurashi/index.html' },
+  { label: '子ども・子育て・教育', url: 'https://www.city.nagoya.jp/kodomo/index.html' },
+  { label: '健康・医療・福祉', url: 'https://www.city.nagoya.jp/kenkofukushi/index.html' },
 ];
 
 // ファイルからURLを抽出
@@ -93,6 +105,108 @@ function extractAndHash(html) {
   return { title, hash };
 }
 
+// HTML の <main> 内から本文リンク（href + 表示テキスト）を抽出
+// SNSシェア・言語切替・広告バナー・外部ドメインは除外し、同一サイト内のリンクのみ対象
+function extractMainLinks(html, pageUrl) {
+  const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  const main = mainMatch ? mainMatch[1] : html;
+
+  const links = {};
+  for (const m of main.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const hrefRaw = m[1];
+    const text = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!text || hrefRaw.startsWith('#')) continue;
+
+    let abs;
+    try { abs = new URL(hrefRaw, pageUrl).href; } catch { continue; }
+
+    let u;
+    try { u = new URL(abs); } catch { continue; }
+    if (u.hostname !== 'www.city.nagoya.jp') continue;
+    if (u.pathname.startsWith('/jigyou/boshu/')) continue;
+
+    links[abs] = text;
+  }
+  return links;
+}
+
+// ─── カテゴリタブ 項目追加/変更/削除チェック ─────────────
+async function checkCategoryChanges() {
+  let snapshots = {};
+  if (fs.existsSync(CATEGORY_SNAPSHOT_FILE)) {
+    snapshots = JSON.parse(fs.readFileSync(CATEGORY_SNAPSHOT_FILE, 'utf8'));
+  }
+  const isFirstRun = Object.keys(snapshots).length === 0;
+
+  console.log(`\n📂 ${CATEGORY_HUB_URLS.length}件のカテゴリタブをチェックします...\n`);
+
+  const results = [];
+  const newSnapshots = {};
+
+  for (const { label, url } of CATEGORY_HUB_URLS) {
+    process.stdout.write(`  取得中: [${label}] ${url}...`);
+    const result = await fetchHtml(url);
+
+    if (!result.ok) {
+      process.stdout.write(` ⚠️ 取得失敗\n`);
+      if (snapshots[url]) newSnapshots[url] = snapshots[url];
+      continue;
+    }
+
+    const links = extractMainLinks(result.html, url);
+    newSnapshots[url] = links;
+
+    const prev = snapshots[url];
+    if (!prev) {
+      process.stdout.write(` 🆕 初回登録（${Object.keys(links).length}件）\n`);
+      continue;
+    }
+
+    const added = [];
+    const removed = [];
+    const changed = [];
+    for (const [href, text] of Object.entries(links)) {
+      if (!(href in prev)) added.push({ href, text });
+      else if (prev[href] !== text) changed.push({ href, oldText: prev[href], newText: text });
+    }
+    for (const [href, text] of Object.entries(prev)) {
+      if (!(href in links)) removed.push({ href, text });
+    }
+
+    if (added.length || removed.length || changed.length) {
+      process.stdout.write(` 🔄 追加${added.length}件 / 削除${removed.length}件 / 変更${changed.length}件\n`);
+      results.push({ label, url, added, removed, changed });
+    } else {
+      process.stdout.write(` ✅ 変更なし\n`);
+    }
+  }
+
+  fs.mkdirSync(path.dirname(CATEGORY_SNAPSHOT_FILE), { recursive: true });
+  fs.writeFileSync(CATEGORY_SNAPSHOT_FILE, JSON.stringify(newSnapshots, null, 2), 'utf8');
+
+  console.log('\n' + '─'.repeat(60));
+
+  if (isFirstRun) {
+    console.log('📂 初回スナップショット登録完了。次回実行から変更検知が有効になります。');
+    return { results: [], isFirstRun: true };
+  }
+
+  if (results.length > 0) {
+    console.log(`🔄 変更を検知したカテゴリ: ${results.length}件\n`);
+    for (const { label, url, added, removed, changed } of results) {
+      console.log(`■ ${label} (${url})`);
+      for (const { href, text } of added) console.log(`  ➕ 追加: ${text}\n     ${href}`);
+      for (const { href, text } of removed) console.log(`  ➖ 削除: ${text}\n     ${href}`);
+      for (const { href, oldText, newText } of changed) console.log(`  🔁 変更: "${oldText}" → "${newText}"\n     ${href}`);
+      console.log('');
+    }
+  } else {
+    console.log('カテゴリタブ配下の項目に変更はありませんでした。');
+  }
+
+  return { results, isFirstRun: false };
+}
+
 // ─── リンク切れチェック ───────────────────────────────
 async function checkBrokenLinks(urlMap) {
   console.log(`\n🔍 ${urlMap.size}件のURLをチェックします...\n`);
@@ -121,10 +235,10 @@ async function checkBrokenLinks(urlMap) {
       for (const f of [...new Set(files)]) console.log(`       → src/${f}`);
       console.log('');
     }
-    return true;
+  } else {
+    console.log('\n全てのリンクが正常です！');
   }
-  console.log('\n全てのリンクが正常です！');
-  return false;
+  return { ok, broken };
 }
 
 // ─── ページ内容変更チェック ──────────────────────────
@@ -196,8 +310,27 @@ async function checkContentChanges(urlMap) {
 }
 
 // ─── エントリーポイント ───────────────────────────────
+// --json-out <file> が指定されていれば、結果を機械可読なJSONとしても書き出す
+// （export-excel.js がこれを読んでExcelレポートを組み立てる）
+function writeJsonOut(data) {
+  const idx = process.argv.indexOf('--json-out');
+  if (idx === -1) return;
+  const file = process.argv[idx + 1];
+  if (!file) return;
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+}
+
 async function run() {
-  const mode = process.argv.includes('--content') ? 'content' : 'links';
+  const mode = process.argv.includes('--content') ? 'content'
+    : process.argv.includes('--categories') ? 'categories'
+    : 'links';
+
+  if (mode === 'categories') {
+    const { results, isFirstRun } = await checkCategoryChanges();
+    writeJsonOut({ mode, isFirstRun, results });
+    if (!isFirstRun && results.length > 0) process.exit(3);
+    return;
+  }
 
   const entries = extractUrls(SRC_DIR);
   const urlMap = new Map();
@@ -208,10 +341,12 @@ async function run() {
 
   if (mode === 'content') {
     const { changed, isFirstRun } = await checkContentChanges(urlMap);
+    writeJsonOut({ mode, isFirstRun, changed });
     if (!isFirstRun && changed.length > 0) process.exit(2);
   } else {
-    const hasBroken = await checkBrokenLinks(urlMap);
-    if (hasBroken) process.exit(1);
+    const { ok, broken } = await checkBrokenLinks(urlMap);
+    writeJsonOut({ mode, ok, broken });
+    if (broken.length > 0) process.exit(1);
   }
 }
 

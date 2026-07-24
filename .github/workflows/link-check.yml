@@ -19,11 +19,14 @@ jobs:
         with:
           node-version: '24'
 
+      - name: 依存パッケージのインストール
+        run: npm ci
+
       # ── 1. リンク切れチェック ──────────────────────────
       - name: リンク切れチェック
         id: links
         run: |
-          node scripts/check-links.js 2>&1 | tee links-result.txt
+          node scripts/check-links.js --json-out links-result.json 2>&1 | tee links-result.txt
           CODE=${PIPESTATUS[0]}
           if [ $CODE -eq 1 ]; then
             echo "broken=true" >> $GITHUB_OUTPUT
@@ -35,7 +38,7 @@ jobs:
       - name: ページ内容変更チェック
         id: content
         run: |
-          node scripts/check-links.js --content 2>&1 | tee content-result.txt
+          node scripts/check-links.js --content --json-out content-result.json 2>&1 | tee content-result.txt
           CODE=${PIPESTATUS[0]}
           if [ $CODE -eq 2 ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -43,18 +46,50 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-      # ── 3. スナップショットをリポジトリにコミット ──────
-      - name: スナップショット更新をコミット
+      # ── 3. トップページ主要タブ（防災・安全安心/くらし・手続き/
+      #        子ども・子育て・教育/健康・医療・福祉）の項目追加/変更/削除チェック
+      - name: カテゴリタブ項目チェック
+        id: categories
+        run: |
+          node scripts/check-links.js --categories --json-out categories-result.json 2>&1 | tee categories-result.txt
+          CODE=${PIPESTATUS[0]}
+          if [ $CODE -eq 3 ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # ── 4. 結果をExcel(.xlsx)にまとめて保存 ────────────
+      #      reports/latest-report.xlsx は毎回上書きし、固定URLで
+      #      常に最新版をダウンロードできるようにする
+      - name: Excelレポート作成
+        if: always()
+        run: |
+          mkdir -p reports
+          node scripts/export-excel.js "reports/latest-report.xlsx"
+          cp "reports/latest-report.xlsx" "hp-check-report-$(date +'%Y-%m-%d').xlsx"
+
+      - name: Excelレポートをアップロード（実行ごとの履歴用）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hp-check-report-${{ github.run_id }}
+          path: hp-check-report-*.xlsx
+          retention-days: 90
+
+      # ── 5. スナップショット・最新レポートをリポジトリにコミット ──
+      - name: スナップショット・レポート更新をコミット
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/url-snapshots.json
-          git diff --cached --quiet || git commit -m "chore: URLスナップショット更新 $(date +'%Y-%m-%d')"
+          git add .github/url-snapshots.json .github/category-snapshots.json reports/latest-report.xlsx
+          git diff --cached --quiet || git commit -m "chore: URLスナップショット・レポート更新 $(date +'%Y-%m-%d')"
           git push
 
-      # ── 4. 問題があれば Issue に登録 ───────────────────
+      # ── 6. 問題があれば Issue に登録 ───────────────────
       - name: 問題をIssueに登録
-        if: steps.links.outputs.broken == 'true' || steps.content.outputs.changed == 'true'
+        if: steps.links.outputs.broken == 'true' || steps.content.outputs.changed == 'true' || steps.categories.outputs.changed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -67,6 +102,7 @@ jobs:
             for (const [name, color, desc] of [
               ['link-check', 'D93F0B', 'リンク切れ検知'],
               ['content-change', '0075CA', 'ページ内容変更検知'],
+              ['category-change', '0E8A16', 'トップページ主要タブの項目追加/変更/削除検知'],
             ]) {
               try {
                 await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name });
@@ -89,8 +125,19 @@ jobs:
               sections.push(`## 🔄 ページ内容変更\n\nservices.js の該当URLを確認して、説明文・詳細・URL を最新情報に更新してください。\n\n\`\`\`\n${txt}\n\`\`\``);
               labels.push('content-change');
             }
+            if ('${{ steps.categories.outputs.changed }}' === 'true') {
+              const txt = fs.readFileSync('categories-result.txt', 'utf8');
+              sections.push(`## 📂 トップページ主要タブの項目変更（防災・安全安心／くらし・手続き／子ども・子育て・教育／健康・医療・福祉）\n\n各タブ配下に新しく追加・削除・改題されたページがないか確認し、必要であれば services.js に反映してください。\n\n\`\`\`\n${txt}\n\`\`\``);
+              labels.push('category-change');
+            }
 
-            const body = sections.join('\n\n') + '\n\n_GitHub Actions 自動検知_';
+            const { data: repoInfo } = await github.rest.repos.get({ owner: context.repo.owner, repo: context.repo.repo });
+            const branch = repoInfo.default_branch;
+            const latestReportUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/raw/${branch}/reports/latest-report.xlsx`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = sections.join('\n\n')
+              + `\n\n---\n📊 Excelレポート（常に最新版・固定URL）：\n${latestReportUrl}\n\n実行ごとの履歴はActionsのArtifactsからも確認できます：\n${runUrl}`
+              + '\n\n_GitHub Actions 自動検知_';
             const title = `[HP変更検知] ${date}`;
 
             // 既存オープンIssueがあればコメント追加
@@ -112,5 +159,5 @@ jobs:
             }
 
       - name: 正常終了ログ
-        if: steps.links.outputs.broken == 'false' && steps.content.outputs.changed == 'false'
-        run: echo "リンク切れ・内容変更ともに検知なし。"
+        if: steps.links.outputs.broken == 'false' && steps.content.outputs.changed == 'false' && steps.categories.outputs.changed == 'false'
+        run: echo "リンク切れ・内容変更・カテゴリタブ変更ともに検知なし。"
