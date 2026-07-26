@@ -60,7 +60,9 @@ function checkUrl(url) {
       method: 'HEAD', timeout: 8000,
       headers: { 'User-Agent': 'Mozilla/5.0 (NagoyaApp link checker)' },
     }, (res) => {
+      res.on('error', () => {});
       resolve({ status: res.statusCode });
+      res.resume();
     });
     req.on('error', (e) => resolve({ status: 'ERROR', error: e.message }));
     req.on('timeout', () => { req.destroy(); resolve({ status: 'TIMEOUT' }); });
@@ -69,10 +71,19 @@ function checkUrl(url) {
 }
 
 // GETリクエストでHTMLを取得
+// 注意: PDFなどの巨大/バイナリファイルを誤って掴んだ際に、レスポンスストリームの
+// 'error'（destroy後のabortedなど）が未処理だとプロセス全体がクラッシュしてしまうため、
+// 二重解決防止のガードと res 側のエラーハンドラを必ず付ける
 function fetchHtml(url) {
   return new Promise((resolve) => {
     const client = url.startsWith('https') ? https : http;
     let body = '';
+    let done = false;
+    const finish = (result) => {
+      if (done) return;
+      done = true;
+      resolve(result);
+    };
     const req = client.get(url, {
       timeout: 12000,
       headers: { 'User-Agent': 'Mozilla/5.0 (NagoyaApp link checker)' },
@@ -80,12 +91,17 @@ function fetchHtml(url) {
       res.setEncoding('utf8');
       res.on('data', (d) => {
         body += d;
-        if (body.length > 300000) req.destroy();
+        if (body.length > 300000) {
+          res.destroy();
+          finish({ ok: true, html: body });
+        }
       });
-      res.on('end', () => resolve({ ok: true, html: body }));
+      res.on('end', () => finish({ ok: true, html: body }));
+      res.on('error', () => finish({ ok: false }));
+      res.on('aborted', () => finish({ ok: false }));
     });
-    req.on('error', () => resolve({ ok: false }));
-    req.on('timeout', () => { req.destroy(); resolve({ ok: false }); });
+    req.on('error', () => finish({ ok: false }));
+    req.on('timeout', () => { req.destroy(); finish({ ok: false }); });
   });
 }
 
@@ -258,7 +274,15 @@ async function checkContentChanges(urlMap) {
 
   for (const [url, files] of urlMap) {
     process.stdout.write(`  取得中: ${url.slice(0, 65)}...`);
-    const result = await fetchHtml(url);
+    let result;
+    try {
+      result = await fetchHtml(url);
+    } catch (e) {
+      // 1件の想定外のエラーで全体を落とさない
+      process.stdout.write(` ⚠️ 取得エラー: ${e.message}\n`);
+      if (snapshots[url]) newSnapshots[url] = snapshots[url];
+      continue;
+    }
 
     if (!result.ok) {
       process.stdout.write(` ⚠️ 取得失敗\n`);

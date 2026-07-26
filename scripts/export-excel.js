@@ -9,6 +9,33 @@
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const JSZip = require('jszip');
+
+// SheetJS(xlsx)は使っていない「動的配列」用メタデータ(xl/metadata.xml)を無条件に
+// 埋め込む既知の挙動があり、これが本物のExcelで「一部の内容に問題が見つかりました」
+// という修復プロンプトの原因になる。書き出し後に不要な参照ごと取り除く。
+async function stripDanglingMetadata(file) {
+  const buf = fs.readFileSync(file);
+  const zip = await JSZip.loadAsync(buf);
+
+  if (!zip.file('xl/metadata.xml')) return;
+
+  zip.remove('xl/metadata.xml');
+
+  const ctPath = '[Content_Types].xml';
+  const ct = await zip.file(ctPath).async('string');
+  zip.file(ctPath, ct.replace(/<Override[^>]*PartName="\/xl\/metadata\.xml"[^>]*\/>/, ''));
+
+  const relsPath = 'xl/_rels/workbook.xml.rels';
+  const relsFile = zip.file(relsPath);
+  if (relsFile) {
+    const rels = await relsFile.async('string');
+    zip.file(relsPath, rels.replace(/<Relationship[^>]*Target="metadata\.xml"[^>]*\/>/, ''));
+  }
+
+  const newBuf = await zip.generateAsync({ type: 'nodebuffer' });
+  fs.writeFileSync(file, newBuf);
+}
 
 const OUT_FILE = process.argv[2] || `hp-check-report-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
@@ -120,7 +147,7 @@ function readExistingHistory(outFile) {
   }
 }
 
-function run() {
+async function run() {
   const today = new Date().toISOString().slice(0, 10);
   const existingHistory = readExistingHistory(OUT_FILE);
 
@@ -153,7 +180,8 @@ function run() {
 
   fs.mkdirSync(path.dirname(OUT_FILE) || '.', { recursive: true });
   XLSX.writeFile(wb, OUT_FILE);
+  await stripDanglingMetadata(OUT_FILE);
   console.log(`✅ Excelレポートを出力しました: ${OUT_FILE}（履歴ログ: 累計${history.length}件、今回${newHistoryRows.length}件追加）`);
 }
 
-run();
+run().catch(err => { console.error(err); process.exit(1); });
