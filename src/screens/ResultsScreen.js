@@ -83,19 +83,52 @@ export default function ResultsScreen({ navigation, route }) {
     });
   };
 
-  // 本人向け・子ども向け・救急・その他に分類
+  // 本人向け・子ども1人ずつ・高齢者1人ずつ・救急・その他に分類
   const categorized = useMemo(() => {
-    const valid = showAll
-      ? matched
-      : matched
+    const byCat = (a, b) => CATS.indexOf(a.cat) - CATS.indexOf(b.cat);
+    const byTitle = (a, b) => a.title.localeCompare(b.title, 'ja');
+
+    const matchList = (list) => showAll
+      ? list
+      : list
           .filter(s => isAgeMatch(s, profile))
           .filter(s => concernMatch(s, profile.concerns));
-    const byCat = (a, b) => CATS.indexOf(a.cat) - CATS.indexOf(b.cat);
+
+    const valid = matchList(matched);
     const emergency = valid.filter(s => s.cat === 'emergency');
     const disaster = valid.filter(s => s.cat === 'disaster');
-    const forChild = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.target === 'child').sort(byCat);
-    const forAdult = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && (s.target === 'adult' || s.target === 'both' || !s.target)).sort(byCat);
-    return { emergency, disaster, forChild, forAdult };
+
+    // 本人向け：世帯全体向けサービス（高齢者向けは下の高齢者ごとのセクションへ分離）
+    const forSelf = valid
+      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && (s.target === 'adult' || s.target === 'both' || !s.target))
+      .sort(byCat);
+
+    // お子さま：1人ごとに、その子だけを持つ仮プロフィールで改めてマッチングし直す
+    // （きょうだいの年齢で誤って一致してしまうのを防ぐ）
+    const perChild = (profile.children || []).map((child, idx) => {
+      const childProfile = { ...profile, children: [child] };
+      const services = SERVICES
+        .filter(s => s.target === 'child')
+        .filter(s => showAll || s.cond(childProfile))
+        .filter(s => isAgeMatch(s, childProfile))
+        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .sort(byCat);
+      return { key: child.id ?? idx, idx, age: child.age, status: child.status, services };
+    });
+
+    // 高齢者：1人ごとに、その方だけを持つ仮プロフィールで改めてマッチングし直す
+    const perElderly = (profile.elderlyMembers || []).map((elder, idx) => {
+      const elderProfile = { ...profile, elderlyMembers: [elder] };
+      const services = SERVICES
+        .filter(s => s.cat === 'elderly')
+        .filter(s => showAll || s.cond(elderProfile))
+        .filter(s => isAgeMatch(s, elderProfile))
+        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .sort(byTitle);
+      return { key: elder.id ?? idx, idx, age: elder.age, relation: elder.relation, services };
+    });
+
+    return { emergency, disaster, forSelf, perChild, perElderly };
   }, [matched, profile, showAll]);
 
   const filtered = useMemo(() => {
@@ -231,32 +264,49 @@ export default function ResultsScreen({ navigation, route }) {
                 ))}
               </View>
             )}
-            {/* 本人向け */}
-            {categorized.forAdult.length > 0 && (
+            {/* 本人・世帯向け */}
+            {categorized.forSelf.length > 0 && (
               <View>
                 <View style={styles.groupHeader}>
                   <Ionicons name="person" size={15} color={colors.primary} />
                   <Text style={styles.groupTitle}>本人・世帯向けサービス</Text>
-                  <Text style={styles.groupCount}>{categorized.forAdult.length}件</Text>
+                  <Text style={styles.groupCount}>{categorized.forSelf.length}件</Text>
                 </View>
-                {categorized.forAdult.map(svc => (
+                {categorized.forSelf.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
             )}
-            {/* 子ども向け */}
-            {categorized.forChild.length > 0 && (
-              <View>
+            {/* お子さま：1人ずつ */}
+            {categorized.perChild.map(group => group.services.length > 0 && (
+              <View key={'child-' + group.key}>
                 <View style={styles.groupHeader}>
                   <Ionicons name="happy" size={15} color="#085041" />
-                  <Text style={[styles.groupTitle, {color:'#085041'}]}>お子さま向けサービス</Text>
-                  <Text style={styles.groupCount}>{categorized.forChild.length}件</Text>
+                  <Text style={[styles.groupTitle, {color:'#085041'}]}>
+                    {group.idx + 1}人目のお子さま{group.age ? `（${group.age}歳）` : ''}
+                  </Text>
+                  <Text style={styles.groupCount}>{group.services.length}件</Text>
                 </View>
-                {categorized.forChild.map(svc => (
+                {group.services.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
-            )}
+            ))}
+            {/* 高齢者：1人ずつ */}
+            {categorized.perElderly.map(group => group.services.length > 0 && (
+              <View key={'elderly-' + group.key}>
+                <View style={styles.groupHeader}>
+                  <Ionicons name="people" size={15} color="#712B13" />
+                  <Text style={[styles.groupTitle, {color:'#712B13'}]}>
+                    高齢者{group.idx + 1}人目{group.age ? `（${group.age}歳）` : ''}
+                  </Text>
+                  <Text style={styles.groupCount}>{group.services.length}件</Text>
+                </View>
+                {group.services.map(svc => (
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                ))}
+              </View>
+            ))}
           </View>
         ) : (
           // カテゴリフィルター表示
