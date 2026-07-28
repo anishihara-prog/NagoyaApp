@@ -22,21 +22,29 @@ const CATS = ['all', 'child', 'health', 'mental', 'emergency', 'disaster', 'welf
 export default function ResultsScreen({ navigation, route }) {
   const { profile } = route.params;
   const [activeCat, setActiveCat] = useState('all');
+  const [showAll, setShowAll] = useState(false);
 
-  const matched = useMemo(() => SERVICES.filter((s) => s.cond(profile)), [profile]);
+  const matched = useMemo(
+    () => showAll ? SERVICES : SERVICES.filter((s) => s.cond(profile)),
+    [profile, showAll]
+  );
 
   // 対象年齢チェック関数
   const isAgeMatch = (svc, profile) => {
+    const myAge = parseInt(profile.age) || 0;
     const childAges = profile.children?.map(c => c.age || c) || [];
-    if (svc.id === 1) return childAges.some(a => a <= 15);
-    if (svc.id === 2) return childAges.some(a => a <= 15);
+    if (svc.id === 1) return childAges.some(a => a <= 15) || (myAge >= 12 && myAge <= 18);
+    if (svc.id === 2) return childAges.some(a => a <= 15) || (myAge >= 12 && myAge <= 18);
     if (svc.id === 3) return childAges.some(a => a <= 5);
     if (svc.id === 4) return childAges.some(a => a <= 5);
     if (svc.id === 5) return childAges.some(a => a >= 6 && a <= 12);
-    if (svc.id === 14) return (parseInt(profile.age) >= 40 && parseInt(profile.age) <= 74) || profile.concerns?.includes('health');
-    if (svc.id === 15) return parseInt(profile.age) >= 20 || profile.concerns?.includes('health');
-    if (svc.id === 16) return parseInt(profile.age) >= 65 || profile.elderlyMembers?.length > 0;
-    if (svc.id === 13) return parseInt(profile.age) >= 65 || profile.elderlyMembers?.length > 0;
+    if (svc.id === 14) return (myAge >= 40 && myAge <= 74) || profile.concerns?.includes('health');
+    if (svc.id === 15) return myAge >= 20 || profile.concerns?.includes('health');
+    if (svc.id === 16) return myAge >= 65 || profile.elderlyMembers?.length > 0;
+    if (svc.id === 13) return myAge >= 65 || profile.elderlyMembers?.length > 0;
+    // 高校・大学関連サービス：本人が中高生・大学生年齢の場合も表示
+    if (svc.id === 108 || svc.id === 109) return childAges.some(a => a >= 15 && a <= 18) || (myAge >= 15 && myAge <= 18);
+    if (svc.id === 110) return childAges.some(a => a >= 17 && a <= 22) || (myAge >= 17 && myAge <= 25);
     return true;
   };
 
@@ -44,15 +52,15 @@ export default function ResultsScreen({ navigation, route }) {
   const concernMatch = (svc, concerns) => {
     if (!concerns || concerns.length === 0) return true;
     const catMap = {
-      pregnant:           ['child', 'health', 'money'],
-      childcare:          ['child', 'money'],
-      education:          ['child'],
+      pregnant:           ['child', 'health', 'money', 'work'],
+      childcare:          ['child', 'money', 'work'],
+      education:          ['child', 'money'],
       child_disability:   ['child', 'welfare'],
-      nursing:            ['elderly', 'welfare'],
-      work:               ['work'],
+      nursing:            ['elderly', 'welfare', 'work'],
+      work:               ['work', 'money'],
       money:              ['money', 'welfare', 'housing'],
       housing_concern:    ['housing', 'welfare'],
-      health:             ['health', 'emergency'],
+      health:             ['health', 'emergency', 'work'],
       mental_health:      ['mental', 'welfare'],
       disability_service: ['welfare', 'work'],
       hikikomori_concern: ['welfare', 'health'],
@@ -77,23 +85,28 @@ export default function ResultsScreen({ navigation, route }) {
 
   // 本人向け・子ども向け・救急・その他に分類
   const categorized = useMemo(() => {
-    const valid = matched
-      .filter(s => isAgeMatch(s, profile))
-      .filter(s => concernMatch(s, profile.concerns));
+    const valid = showAll
+      ? matched
+      : matched
+          .filter(s => isAgeMatch(s, profile))
+          .filter(s => concernMatch(s, profile.concerns));
+    const byCat = (a, b) => CATS.indexOf(a.cat) - CATS.indexOf(b.cat);
     const emergency = valid.filter(s => s.cat === 'emergency');
     const disaster = valid.filter(s => s.cat === 'disaster');
-    const forChild = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.target === 'child');
-    const forAdult = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && (s.target === 'adult' || s.target === 'both' || !s.target));
+    const forChild = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.target === 'child').sort(byCat);
+    const forAdult = valid.filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && (s.target === 'adult' || s.target === 'both' || !s.target)).sort(byCat);
     return { emergency, disaster, forChild, forAdult };
-  }, [matched, profile]);
+  }, [matched, profile, showAll]);
 
   const filtered = useMemo(() => {
-    const allValid = matched
-      .filter(s => isAgeMatch(s, profile))
-      .filter(s => concernMatch(s, profile.concerns));
+    const allValid = showAll
+      ? matched
+      : matched
+          .filter(s => isAgeMatch(s, profile))
+          .filter(s => concernMatch(s, profile.concerns));
     if (activeCat === 'all') return allValid;
     return allValid.filter(s => s.cat === activeCat);
-  }, [matched, activeCat, profile]);
+  }, [matched, activeCat, profile, showAll]);
 
   const profilePills = useMemo(() => {
     const p = [];
@@ -122,7 +135,7 @@ export default function ResultsScreen({ navigation, route }) {
     return p;
   }, [profile]);
 
-  const totalCount = matched.filter(s => isAgeMatch(s, profile)).length;
+  const totalCount = SERVICES.filter(s => s.cond(profile) && isAgeMatch(s, profile)).length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -131,9 +144,15 @@ export default function ResultsScreen({ navigation, route }) {
           <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>おすすめサービス</Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalCount}件</Text>
-        </View>
+        <TouchableOpacity
+          style={[styles.allToggle, showAll && styles.allToggleActive]}
+          onPress={() => { setShowAll(v => !v); setActiveCat('all'); }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.allToggleText, showAll && styles.allToggleTextActive]}>
+            {showAll ? `全${SERVICES.length}件` : `${totalCount}件`}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Profile pills */}
@@ -321,12 +340,16 @@ function ServiceCard({ svc, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
+  safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md, gap: 8 },
   backBtn: { padding: 4 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: font.semibold, color: colors.textPrimary },
   badge: { backgroundColor: colors.primaryBg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 3 },
   badgeText: { fontSize: 12, fontWeight: font.medium, color: colors.primary },
+  allToggle: { borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bgPrimary },
+  allToggleActive: { borderColor: colors.accent, backgroundColor: colors.primaryBg },
+  allToggleText: { fontSize: 12, fontWeight: font.medium, color: colors.textSecondary },
+  allToggleTextActive: { color: colors.primary },
   pillsWrap: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, gap: 5, marginBottom: 8 },
   pillsScroll: { marginBottom: 4 },
   pillsContent: { paddingHorizontal: spacing.lg, gap: 6 },
