@@ -17,12 +17,15 @@ function getAgeLabel(detail) {
   return t.length > 32 ? t.slice(0, 32) + '…' : t;
 }
 
-const CATS = ['all', 'child', 'health', 'mental', 'emergency', 'disaster', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
+const CATS = ['all', 'emergency', 'disaster', 'child', 'health', 'mental', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
 
 export default function ResultsScreen({ navigation, route }) {
   const { profile } = route.params;
   const [activeCat, setActiveCat] = useState('all');
   const [showAll, setShowAll] = useState(false);
+  const [viewMode, setViewMode] = useState('all'); // 'all' | 'byPerson'
+  const [drillPerson, setDrillPerson] = useState(null); // null | person object from `people`
+  const [drillCat, setDrillCat] = useState(null); // null | category key
 
   const matched = useMemo(
     () => showAll ? SERVICES : SERVICES.filter((s) => s.cond(profile)),
@@ -128,8 +131,96 @@ export default function ResultsScreen({ navigation, route }) {
       return { key: elder.id ?? idx, idx, age: elder.age, relation: elder.relation, services };
     });
 
-    return { emergency, disaster, forSelf, perChild, perElderly };
+    // 「まとめて表示」モード用：救急医療以外（防災・本人・お子さま・高齢者向けすべて）を1つにまとめる
+    const selfAndHousehold = valid.filter(s => s.cat !== 'emergency').sort(byCat);
+
+    return { emergency, disaster, forSelf, perChild, perElderly, selfAndHousehold };
   }, [matched, profile, showAll]);
+
+  // 「人ごとに見る」モード用：救急医療・防災・本人・子ども・高齢者を1つのリストにまとめる（0件は除く）
+  const people = useMemo(() => {
+    const list = [];
+    if (categorized.emergency.length) {
+      list.push({ key: 'emergency', type: 'emergency', label: '救急医療', icon: 'warning', color: '#B71C1C', services: categorized.emergency });
+    }
+    if (categorized.disaster.length) {
+      list.push({ key: 'disaster', type: 'disaster', label: '防災・備え', icon: 'home', color: '#E65100', services: categorized.disaster });
+    }
+    if (categorized.forSelf.length) {
+      list.push({ key: 'self', type: 'self', label: '本人', icon: 'person', color: colors.primary, services: categorized.forSelf });
+    }
+    categorized.perChild.forEach(g => {
+      if (!g.services.length) return;
+      list.push({
+        key: 'child-' + g.key, type: 'child',
+        label: `${g.idx + 1}人目のお子さま${g.age ? `（${g.age}歳）` : ''}`,
+        icon: 'happy', color: '#085041', services: g.services,
+      });
+    });
+    categorized.perElderly.forEach(g => {
+      if (!g.services.length) return;
+      list.push({
+        key: 'elderly-' + g.key, type: 'elderly',
+        label: `高齢者${g.idx + 1}人目${g.age ? `（${g.age}歳）` : ''}`,
+        icon: 'people', color: '#712B13', services: g.services,
+      });
+    });
+    return list;
+  }, [categorized]);
+
+  // 選択中の人のサービスをカテゴリ別に集計
+  const categorizeByCat = (services) => {
+    const map = {};
+    services.forEach(s => { (map[s.cat] ||= []).push(s); });
+    return CATS.filter(c => c !== 'all' && map[c]).map(c => ({ cat: c, label: CAT_LABELS[c], services: map[c] }));
+  };
+
+  const drillPersonCats = useMemo(
+    () => drillPerson ? categorizeByCat(drillPerson.services) : [],
+    [drillPerson]
+  );
+
+  // 救急医療・防災のように人のラベル自体がカテゴリ名と同じ場合は重複表示しない
+  const drillHeading = (person, cat) => {
+    const catLabel = CAT_LABELS[cat];
+    return person.label === catLabel ? person.label : `${person.label}・${catLabel}`;
+  };
+
+  // 人を選択：カテゴリが1つしかなければカテゴリ選択を飛ばして直接項目一覧へ
+  const selectPerson = (person) => {
+    const cats = categorizeByCat(person.services);
+    setDrillPerson(person);
+    setDrillCat(cats.length === 1 ? cats[0].cat : null);
+  };
+
+  // 項目一覧から「← 戻る」：カテゴリが1つしかなく自動スキップされていた場合は人一覧まで戻る
+  const backFromItems = () => {
+    if (drillPersonCats.length <= 1) {
+      setDrillPerson(null);
+      setDrillCat(null);
+    } else {
+      setDrillCat(null);
+    }
+  };
+
+  const switchViewMode = (mode) => {
+    setViewMode(mode);
+    setDrillPerson(null);
+    setDrillCat(null);
+  };
+
+  // ヘッダーの「←」：ドリルダウン中は1段階だけ戻り、一覧まで戻ったら通常通り前の画面へ
+  const handleHeaderBack = () => {
+    if (viewMode === 'byPerson' && drillPerson) {
+      if (drillCat) {
+        backFromItems();
+      } else {
+        setDrillPerson(null);
+      }
+      return;
+    }
+    navigation.goBack();
+  };
 
   const filtered = useMemo(() => {
     const allValid = showAll
@@ -173,10 +264,12 @@ export default function ResultsScreen({ navigation, route }) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleHeaderBack} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>おすすめサービス</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {viewMode === 'byPerson' && drillPerson ? drillPerson.label : 'おすすめサービス'}
+        </Text>
         <TouchableOpacity
           style={[styles.allToggle, showAll && styles.allToggleActive]}
           onPress={() => { setShowAll(v => !v); setActiveCat('all'); }}
@@ -188,28 +281,84 @@ export default function ResultsScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* Profile pills */}
-      <View style={styles.pillsWrap}>
-        {profilePills.map((p, i) => (
-          <View key={i} style={styles.pill}>
-            <Text style={styles.pillText}>{p}</Text>
-          </View>
-        ))}
+      {/* 表示モード切替 */}
+      <View style={styles.viewModeWrap}>
+        <TouchableOpacity
+          style={[styles.viewModeBtn, viewMode === 'all' && styles.viewModeBtnActive]}
+          onPress={() => switchViewMode('all')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.viewModeBtnText, viewMode === 'all' && styles.viewModeBtnTextActive]}>まとめて表示</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.viewModeBtn, viewMode === 'byPerson' && styles.viewModeBtnActive]}
+          onPress={() => switchViewMode('byPerson')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.viewModeBtnText, viewMode === 'byPerson' && styles.viewModeBtnTextActive]}>人ごとに見る</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Category filters - 2段折り返し */}
-      <View style={styles.filterWrap}>
-        {CATS.map(cat => (
-          <TouchableOpacity
-            key={cat}
-            style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive, cat === 'disaster' && styles.filterChipDisaster, activeCat === cat && cat === 'disaster' && styles.filterChipDisasterActive, cat === 'admin' && styles.filterChipAdmin, activeCat === cat && cat === 'admin' && styles.filterChipAdminActive, cat === 'mental' && styles.filterChipMental, activeCat === cat && cat === 'mental' && styles.filterChipMentalActive]}
-            onPress={() => setActiveCat(cat)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency, cat === 'disaster' && styles.filterChipTextDisaster, cat === 'admin' && styles.filterChipTextAdmin, cat === 'mental' && styles.filterChipTextMental]}>{CAT_LABELS[cat] || cat}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {viewMode === 'all' ? (
+        <>
+          {/* Profile pills */}
+          <View style={styles.pillsWrap}>
+            {profilePills.map((p, i) => (
+              <View key={i} style={styles.pill}>
+                <Text style={styles.pillText}>{p}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Category filters - 2段折り返し */}
+          <View style={styles.filterWrap}>
+            {CATS.map(cat => (
+              <TouchableOpacity
+                key={cat}
+                style={[styles.filterChip, activeCat === cat && styles.filterChipActive, cat === 'emergency' && styles.filterChipEmergency, activeCat === cat && cat === 'emergency' && styles.filterChipEmergencyActive, cat === 'disaster' && styles.filterChipDisaster, activeCat === cat && cat === 'disaster' && styles.filterChipDisasterActive]}
+                onPress={() => setActiveCat(cat)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterChipText, activeCat === cat && styles.filterChipTextActive, cat === 'emergency' && styles.filterChipTextEmergency, cat === 'disaster' && styles.filterChipTextDisaster]}>{CAT_LABELS[cat] || cat}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      ) : (
+        <View style={styles.pillsWrap}>
+          {drillPerson === null ? (
+            people.length === 0 ? (
+              <Text style={styles.pillText}>該当する方が見つかりませんでした</Text>
+            ) : (
+              people.map(p => (
+                <TouchableOpacity key={p.key} style={styles.personBtn} onPress={() => selectPerson(p)} activeOpacity={0.7}>
+                  <Ionicons name={p.icon} size={14} color={p.color} />
+                  <Text style={[styles.personBtnText, { color: p.color }]}>{p.label}</Text>
+                  <Text style={styles.personBtnCount}>{p.services.length}</Text>
+                </TouchableOpacity>
+              ))
+            )
+          ) : drillCat === null ? (
+            <>
+              <TouchableOpacity style={styles.backRow} onPress={() => setDrillPerson(null)} activeOpacity={0.7}>
+                <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
+                <Text style={styles.backRowText}>{drillPerson.label}</Text>
+              </TouchableOpacity>
+              {drillPersonCats.map(c => (
+                <TouchableOpacity key={c.cat} style={styles.catDrillChip} onPress={() => setDrillCat(c.cat)} activeOpacity={0.7}>
+                  <Text style={styles.catDrillChipText}>{c.label}</Text>
+                  <Text style={styles.catDrillChipCount}>{c.services.length}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          ) : (
+            <TouchableOpacity style={styles.backRow} onPress={backFromItems} activeOpacity={0.7}>
+              <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
+              <Text style={styles.backRowText}>{drillHeading(drillPerson, drillCat)}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -235,91 +384,68 @@ export default function ResultsScreen({ navigation, route }) {
           );
         })()}
 
-        {activeCat === 'all' ? (
-          // グループ表示
-          <View style={styles.list}>
-            {/* 救急医療 */}
-            {categorized.emergency.length > 0 && (
-              <View>
-                <View style={styles.groupHeader}>
-                  <Ionicons name="warning" size={15} color="#B71C1C" />
-                  <Text style={[styles.groupTitle, {color:'#B71C1C'}]}>救急医療</Text>
-                  <Text style={styles.groupCount}>{categorized.emergency.length}件</Text>
+        {viewMode === 'all' ? (
+          activeCat === 'all' ? (
+            // グループ表示：救急医療／本人・世帯向けサービスの2つのみ
+            <View style={styles.list}>
+              {/* 救急医療 */}
+              {categorized.emergency.length > 0 && (
+                <View>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="warning" size={15} color="#B71C1C" />
+                    <Text style={[styles.groupTitle, {color:'#B71C1C'}]}>救急医療</Text>
+                    <Text style={styles.groupCount}>{categorized.emergency.length}件</Text>
+                  </View>
+                  {categorized.emergency.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
                 </View>
-                {categorized.emergency.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-                ))}
-              </View>
-            )}
-            {/* 防災・備え */}
-            {categorized.disaster.length > 0 && (
-              <View>
-                <View style={styles.groupHeader}>
-                  <Ionicons name="home" size={15} color="#E65100" />
-                  <Text style={[styles.groupTitle, {color:'#E65100'}]}>防災・備え</Text>
-                  <Text style={styles.groupCount}>{categorized.disaster.length}件</Text>
+              )}
+              {/* 本人・世帯向け（防災・お子さま・高齢者向けを含む全項目） */}
+              {categorized.selfAndHousehold.length > 0 && (
+                <View>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="person" size={15} color={colors.primary} />
+                    <Text style={styles.groupTitle}>本人・世帯向けサービス</Text>
+                    <Text style={styles.groupCount}>{categorized.selfAndHousehold.length}件</Text>
+                  </View>
+                  {categorized.selfAndHousehold.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
                 </View>
-                {categorized.disaster.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-                ))}
-              </View>
-            )}
-            {/* 本人・世帯向け */}
-            {categorized.forSelf.length > 0 && (
-              <View>
-                <View style={styles.groupHeader}>
-                  <Ionicons name="person" size={15} color={colors.primary} />
-                  <Text style={styles.groupTitle}>本人・世帯向けサービス</Text>
-                  <Text style={styles.groupCount}>{categorized.forSelf.length}件</Text>
+              )}
+            </View>
+          ) : (
+            // カテゴリフィルター表示
+            <View style={styles.list}>
+              {filtered.length === 0 ? (
+                <View style={styles.empty}>
+                  <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
+                  <Text style={styles.emptyText}>このカテゴリに該当するサービスは{'\n'}見つかりませんでした</Text>
                 </View>
-                {categorized.forSelf.map(svc => (
+              ) : (
+                filtered.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-                ))}
-              </View>
-            )}
-            {/* お子さま：1人ずつ */}
-            {categorized.perChild.map(group => group.services.length > 0 && (
-              <View key={'child-' + group.key}>
-                <View style={styles.groupHeader}>
-                  <Ionicons name="happy" size={15} color="#085041" />
-                  <Text style={[styles.groupTitle, {color:'#085041'}]}>
-                    {group.idx + 1}人目のお子さま{group.age ? `（${group.age}歳）` : ''}
-                  </Text>
-                  <Text style={styles.groupCount}>{group.services.length}件</Text>
-                </View>
-                {group.services.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-                ))}
-              </View>
-            ))}
-            {/* 高齢者：1人ずつ */}
-            {categorized.perElderly.map(group => group.services.length > 0 && (
-              <View key={'elderly-' + group.key}>
-                <View style={styles.groupHeader}>
-                  <Ionicons name="people" size={15} color="#712B13" />
-                  <Text style={[styles.groupTitle, {color:'#712B13'}]}>
-                    高齢者{group.idx + 1}人目{group.age ? `（${group.age}歳）` : ''}
-                  </Text>
-                  <Text style={styles.groupCount}>{group.services.length}件</Text>
-                </View>
-                {group.services.map(svc => (
-                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-                ))}
-              </View>
-            ))}
-          </View>
+                ))
+              )}
+            </View>
+          )
         ) : (
-          // カテゴリフィルター表示
+          // 人ごとに見るモード：タブ（救急医療・防災・本人・子ども・高齢者）を選んだときだけ項目を表示
           <View style={styles.list}>
-            {filtered.length === 0 ? (
-              <View style={styles.empty}>
-                <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
-                <Text style={styles.emptyText}>このカテゴリに該当するサービスは{'\n'}見つかりませんでした</Text>
+            {drillPerson && drillCat && (
+              <View>
+                <View style={styles.groupHeader}>
+                  <Ionicons name={drillPerson.icon} size={15} color={drillPerson.color} />
+                  <Text style={[styles.groupTitle, { color: drillPerson.color }]}>
+                    {drillHeading(drillPerson, drillCat)}
+                  </Text>
+                  <Text style={styles.groupCount}>{drillPerson.services.filter(s => s.cat === drillCat).length}件</Text>
+                </View>
+                {drillPerson.services.filter(s => s.cat === drillCat).map(svc => (
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                ))}
               </View>
-            ) : (
-              filtered.map(svc => (
-                <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
-              ))
             )}
           </View>
         )}
@@ -400,6 +526,19 @@ const styles = StyleSheet.create({
   allToggleActive: { borderColor: colors.accent, backgroundColor: colors.primaryBg },
   allToggleText: { fontSize: 12, fontWeight: font.medium, color: colors.textSecondary },
   allToggleTextActive: { color: colors.primary },
+  viewModeWrap: { flexDirection: 'row', paddingHorizontal: spacing.lg, gap: 8, marginBottom: 10 },
+  viewModeBtn: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: radius.md, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.bgPrimary },
+  viewModeBtnActive: { borderColor: colors.accent, backgroundColor: colors.primaryBg },
+  viewModeBtnText: { fontSize: 13, fontWeight: font.semibold, color: colors.textSecondary },
+  viewModeBtnTextActive: { color: colors.primary, fontWeight: font.semibold },
+  personBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.bgPrimary, borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border },
+  personBtnText: { fontSize: 13, fontWeight: font.medium },
+  personBtnCount: { fontSize: 11, color: colors.textTertiary, backgroundColor: colors.bgSecondary, paddingHorizontal: 7, paddingVertical: 1, borderRadius: radius.full },
+  catDrillChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.bgPrimary, borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border },
+  catDrillChipText: { fontSize: 13, fontWeight: font.medium, color: colors.textPrimary },
+  catDrillChipCount: { fontSize: 11, color: colors.textTertiary, backgroundColor: colors.bgSecondary, paddingHorizontal: 7, paddingVertical: 1, borderRadius: radius.full },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingVertical: 4, marginBottom: 2, width: '100%' },
+  backRowText: { fontSize: 13, fontWeight: font.medium, color: colors.textSecondary },
   pillsWrap: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, gap: 5, marginBottom: 8 },
   pillsScroll: { marginBottom: 4 },
   pillsContent: { paddingHorizontal: spacing.lg, gap: 6 },
@@ -418,12 +557,6 @@ const styles = StyleSheet.create({
   filterChipTextActive: { color: colors.primary, fontWeight: font.medium },
   filterChipTextEmergency: { color: '#B71C1C' },
   filterChipTextDisaster: { color: '#E65100' },
-  filterChipAdmin: { borderColor: '#A5D6A7', backgroundColor: '#F1F8E9' },
-  filterChipAdminActive: { borderColor: '#1B5E20', backgroundColor: '#E8F5E9' },
-  filterChipTextAdmin: { color: '#1B5E20' },
-  filterChipMental: { borderColor: '#CE93D8', backgroundColor: '#FCF4FF' },
-  filterChipMentalActive: { borderColor: '#6A1B9A', backgroundColor: '#F3E5F5' },
-  filterChipTextMental: { color: '#6A1B9A' },
   list: { padding: spacing.lg, gap: 8, paddingBottom: 20 },
   groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, marginTop: 8, paddingBottom: 8, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   groupTitle: { flex: 1, fontSize: 14, fontWeight: font.semibold, color: colors.primary },
