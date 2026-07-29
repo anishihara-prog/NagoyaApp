@@ -26,6 +26,7 @@ export default function ResultsScreen({ navigation, route }) {
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'byPerson'
   const [drillPerson, setDrillPerson] = useState(null); // null | person object from `people`
   const [drillCat, setDrillCat] = useState(null); // null | category key
+  const [personViewMode, setPersonViewMode] = useState('all'); // 'all' | 'byCategory' — 人選択後のサブモード
 
   const matched = useMemo(
     () => showAll ? SERVICES : SERVICES.filter((s) => s.cond(profile)),
@@ -191,6 +192,7 @@ export default function ResultsScreen({ navigation, route }) {
     const cats = categorizeByCat(person.services);
     setDrillPerson(person);
     setDrillCat(cats.length === 1 ? cats[0].cat : null);
+    setPersonViewMode('all');
   };
 
   // 項目一覧から「← 戻る」：カテゴリが1つしかなく自動スキップされていた場合は人一覧まで戻る
@@ -198,6 +200,7 @@ export default function ResultsScreen({ navigation, route }) {
     if (drillPersonCats.length <= 1) {
       setDrillPerson(null);
       setDrillCat(null);
+      setPersonViewMode('all');
     } else {
       setDrillCat(null);
     }
@@ -207,6 +210,7 @@ export default function ResultsScreen({ navigation, route }) {
     setViewMode(mode);
     setDrillPerson(null);
     setDrillCat(null);
+    setPersonViewMode('all');
   };
 
   // ヘッダーの「←」：ドリルダウン中は1段階だけ戻り、一覧まで戻ったら通常通り前の画面へ
@@ -216,6 +220,7 @@ export default function ResultsScreen({ navigation, route }) {
         backFromItems();
       } else {
         setDrillPerson(null);
+        setPersonViewMode('all');
       }
       return;
     }
@@ -281,22 +286,43 @@ export default function ResultsScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* 表示モード切替 */}
+      {/* 表示モード切替：人を選択中（カテゴリ複数）は「全表示／項目ごとに表示」に切り替わる */}
       <View style={styles.viewModeWrap}>
-        <TouchableOpacity
-          style={[styles.viewModeBtn, viewMode === 'all' && styles.viewModeBtnActive]}
-          onPress={() => switchViewMode('all')}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.viewModeBtnText, viewMode === 'all' && styles.viewModeBtnTextActive]}>まとめて表示</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.viewModeBtn, viewMode === 'byPerson' && styles.viewModeBtnActive]}
-          onPress={() => switchViewMode('byPerson')}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.viewModeBtnText, viewMode === 'byPerson' && styles.viewModeBtnTextActive]}>人ごとに見る</Text>
-        </TouchableOpacity>
+        {viewMode === 'byPerson' && drillPerson && drillCat === null && drillPersonCats.length > 1 ? (
+          <>
+            <TouchableOpacity
+              style={[styles.viewModeBtn, personViewMode === 'all' && styles.viewModeBtnActive]}
+              onPress={() => setPersonViewMode('all')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.viewModeBtnText, personViewMode === 'all' && styles.viewModeBtnTextActive]}>全表示</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewModeBtn, personViewMode === 'byCategory' && styles.viewModeBtnActive]}
+              onPress={() => setPersonViewMode('byCategory')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.viewModeBtnText, personViewMode === 'byCategory' && styles.viewModeBtnTextActive]}>項目ごとに表示</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[styles.viewModeBtn, viewMode === 'all' && styles.viewModeBtnActive]}
+              onPress={() => switchViewMode('all')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.viewModeBtnText, viewMode === 'all' && styles.viewModeBtnTextActive]}>まとめて表示</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewModeBtn, viewMode === 'byPerson' && styles.viewModeBtnActive]}
+              onPress={() => switchViewMode('byPerson')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.viewModeBtnText, viewMode === 'byPerson' && styles.viewModeBtnTextActive]}>人ごとに見る</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {viewMode === 'all' ? (
@@ -340,11 +366,11 @@ export default function ResultsScreen({ navigation, route }) {
             )
           ) : drillCat === null ? (
             <>
-              <TouchableOpacity style={styles.backRow} onPress={() => setDrillPerson(null)} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.backRow} onPress={() => { setDrillPerson(null); setPersonViewMode('all'); }} activeOpacity={0.7}>
                 <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
                 <Text style={styles.backRowText}>{drillPerson.label}</Text>
               </TouchableOpacity>
-              {drillPersonCats.map(c => (
+              {personViewMode === 'byCategory' && drillPersonCats.map(c => (
                 <TouchableOpacity key={c.cat} style={styles.catDrillChip} onPress={() => setDrillCat(c.cat)} activeOpacity={0.7}>
                   <Text style={styles.catDrillChipText}>{c.label}</Text>
                   <Text style={styles.catDrillChipCount}>{c.services.length}</Text>
@@ -431,7 +457,7 @@ export default function ResultsScreen({ navigation, route }) {
             </View>
           )
         ) : (
-          // 人ごとに見るモード：タブ（救急医療・防災・本人・子ども・高齢者）を選んだときだけ項目を表示
+          // 人ごとに見るモード：カテゴリを選んだとき、または「全表示」選択時のみ項目を表示
           <View style={styles.list}>
             {drillPerson && drillCat && (
               <View>
@@ -443,6 +469,18 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={styles.groupCount}>{drillPerson.services.filter(s => s.cat === drillCat).length}件</Text>
                 </View>
                 {drillPerson.services.filter(s => s.cat === drillCat).map(svc => (
+                  <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                ))}
+              </View>
+            )}
+            {drillPerson && !drillCat && personViewMode === 'all' && (
+              <View>
+                <View style={styles.groupHeader}>
+                  <Ionicons name={drillPerson.icon} size={15} color={drillPerson.color} />
+                  <Text style={[styles.groupTitle, { color: drillPerson.color }]}>{drillPerson.label}</Text>
+                  <Text style={styles.groupCount}>{drillPerson.services.length}件</Text>
+                </View>
+                {drillPerson.services.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
