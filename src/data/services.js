@@ -933,7 +933,7 @@ export const SERVICES = [
     id: 121, title: '高等教育の修学支援新制度（大学・専門学校）（県）', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '愛知県内の大学・専門学校等に通う学生の機関要件確認等、県が案内する修学支援新制度の窓口。',
     detail: '【対象】愛知県内の大学・短大・高専・専門学校に在籍する学生\n【内容】対象機関の要件確認など、県の案内窓口\n【問合せ】愛知県私学振興室',
-    url: 'https://www.pref.aichi.jp/soshiki/shigaku/kikanyoukenkakunin.html', urlLabel: '愛知県公式サイトで確認する', contact: '愛知県私学振興室',
+    url: 'https://www.pref.aichi.jp/soshiki/zaimusisetsu/koutoukyouikumusyouka.html', urlLabel: '愛知県公式サイトで確認する', contact: '愛知県私学振興室',
     welnet: false, cond: (s) => s.children?.some(c => (c.age||c) >= 17 && (c.age||c) <= 22) || (parseInt(s.age) >= 17 && parseInt(s.age) <= 25) || s.concerns?.includes('education'),
     extraLinks: [{ url: 'https://www.pref.aichi.jp/soshiki/shigaku/kikanyoukenkakunin.html', label: '高等教育の修学支援新制度対象校' }],
   },
