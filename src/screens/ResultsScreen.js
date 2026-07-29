@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
 import { SERVICES, CAT_LABELS, CAT_COLORS } from '../data/services';
-import { DISTRICT_LIST, DISTRICTS } from '../data/districts';
 
 // 【対象】行から年齢・対象者情報を抽出
 function getAgeLabel(detail) {
@@ -144,6 +143,9 @@ export default function ResultsScreen({ navigation, route }) {
     if (categorized.emergency.length) {
       list.push({ key: 'emergency', type: 'emergency', label: '救急医療', icon: 'warning', color: '#B71C1C', services: categorized.emergency });
     }
+    if (profile.district) {
+      list.push({ key: 'disasterInfo', type: 'disasterInfo', label: '防災情報', icon: 'alert-circle', color: '#B71C1C' });
+    }
     if (categorized.disaster.length) {
       list.push({ key: 'disaster', type: 'disaster', label: '防災・備え', icon: 'home', color: '#E65100', services: categorized.disaster });
     }
@@ -167,7 +169,7 @@ export default function ResultsScreen({ navigation, route }) {
       });
     });
     return list;
-  }, [categorized]);
+  }, [categorized, profile.district]);
 
   // 選択中の人のサービスをカテゴリ別に集計
   const categorizeByCat = (services) => {
@@ -357,10 +359,17 @@ export default function ResultsScreen({ navigation, route }) {
               <Text style={styles.pillText}>該当する方が見つかりませんでした</Text>
             ) : (
               people.map(p => (
-                <TouchableOpacity key={p.key} style={styles.personBtn} onPress={() => selectPerson(p)} activeOpacity={0.7}>
+                <TouchableOpacity
+                  key={p.key}
+                  style={styles.personBtn}
+                  onPress={() => p.type === 'disasterInfo'
+                    ? navigation.navigate('Disaster', { districtKey: profile.district, profile })
+                    : selectPerson(p)}
+                  activeOpacity={0.7}
+                >
                   <Ionicons name={p.icon} size={14} color={p.color} />
                   <Text style={[styles.personBtnText, { color: p.color }]}>{p.label}</Text>
-                  <Text style={styles.personBtnCount}>{p.services.length}</Text>
+                  {p.type !== 'disasterInfo' && <Text style={styles.personBtnCount}>{p.services.length}</Text>}
                 </TouchableOpacity>
               ))
             )
@@ -387,28 +396,6 @@ export default function ResultsScreen({ navigation, route }) {
       )}
 
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* 区別防災情報バナー */}
-        {profile.district && (() => {
-          const d = DISTRICTS[profile.district];
-          const dName = DISTRICT_LIST.find(x => x.key === profile.district)?.name || '';
-          return (
-            <TouchableOpacity
-              style={styles.disasterBanner}
-              onPress={() => navigation.navigate('Disaster', { districtKey: profile.district, profile })}
-              activeOpacity={0.8}
-            >
-              <View style={styles.disasterBannerLeft}>
-                <Ionicons name="warning" size={18} color="#B71C1C" />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.disasterBannerTitle}>{dName}の防災情報を確認する</Text>
-                  <Text style={styles.disasterBannerRisks}>{d?.risks?.join('・')}リスクあり</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#B71C1C" />
-            </TouchableOpacity>
-          );
-        })()}
 
         {viewMode === 'all' ? (
           activeCat === 'all' ? (
@@ -493,12 +480,6 @@ export default function ResultsScreen({ navigation, route }) {
 
       {/* FAB */}
       <View style={styles.fabWrap}>
-        {profile.district && (
-          <TouchableOpacity style={styles.fabDisaster} onPress={() => navigation.navigate('Disaster', { districtKey: profile.district, profile })} activeOpacity={0.85}>
-            <Ionicons name="warning-outline" size={18} color="#B71C1C" />
-            <Text style={styles.fabDisasterText}>{profile.district ? require('../data/districts').DISTRICT_LIST.find(d => d.key === profile.district)?.name : ''}の防災情報</Text>
-          </TouchableOpacity>
-        )}
         <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Chat', { profile })} activeOpacity={0.85}>
           <Ionicons name="chatbubble-ellipses-outline" size={18} color="#fff" />
           <Text style={styles.fabText}>チャットで詳しく調べる</Text>
@@ -618,15 +599,9 @@ const styles = StyleSheet.create({
   cardLink: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
   empty: { alignItems: 'center', paddingVertical: 48, gap: 12 },
   emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
-  disasterBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: 4, backgroundColor: '#FFFAFA', borderRadius: radius.lg, padding: 12, borderWidth: 1, borderColor: '#FFCDD2' },
-  disasterBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  disasterBannerTitle: { fontSize: 13, fontWeight: font.semibold, color: '#B71C1C', marginBottom: 2 },
-  disasterBannerRisks: { fontSize: 11, color: '#C62828' },
   ageBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E3F0FB', borderRadius: radius.full, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, marginBottom: 7 },
   ageBadgeText: { fontSize: 10, color: '#1565C0', fontWeight: font.medium },
   fabWrap: { position: 'absolute', bottom: 20, right: 16, gap: 8, alignItems: 'flex-end' },
   fab: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: colors.primaryMid, borderRadius: radius.full, paddingVertical: 13, paddingHorizontal: 18 },
   fabText: { fontSize: 14, fontWeight: font.semibold, color: '#fff' },
-  fabDisaster: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FDECEA', borderRadius: radius.full, paddingVertical: 11, paddingHorizontal: 16, borderWidth: 1, borderColor: '#FFCDD2' },
-  fabDisasterText: { fontSize: 13, fontWeight: font.semibold, color: '#B71C1C' },
 });
