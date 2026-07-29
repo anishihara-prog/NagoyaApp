@@ -922,14 +922,6 @@ export const SERVICES = [
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
   },
   {
-    id: 119, title: 'のびのび子育てサポート事業（ファミリー・サポート・センター事業）', cat: 'child', urgent: false, target: 'child', grayzone: false,
-    desc: '子どもの預かり・送迎を地域の会員が互いに助け合う名古屋市の事業。',
-    detail: '【対象】生後57日〜小学6年生の子どもを持つ保護者\n【利用内容】保育所の送迎・一時預かり・習い事の送迎など\n【費用】1時間800〜1,000円程度',
-    url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1034344/1009276/1034087.html', contact: 'お近くの事務局(支部または本部)',
-    welnet: false, cond: (s) => s.children.length > 0,
-    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1034344/1009276/1034087.html', label: 'のびのび子育てサポート事業（ファミリー・サポート・センター事業）について' }],
-  },
-  {
     id: 121, title: '高等教育の修学支援新制度（大学・専門学校）（県）', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '愛知県内の大学・専門学校等に通う学生の機関要件確認等、県が案内する修学支援新制度の窓口。',
     detail: '【対象】愛知県内の大学・短大・高専・専門学校に在籍する学生\n【内容】対象機関の要件確認など、県の案内窓口\n【問合せ】愛知県私学振興室',
