@@ -396,7 +396,7 @@ export const SERVICES = [
     detail: '【家族介護者教室】介護技術・知識を学ぶ教室。各区で定期開催。無料。\n【家族介護慰労金】要介護4または5で、1年以上介護保険サービスを利用していない方を在宅介護している家族に年額10万円を支給\n【申請先】各区役所 福祉課',
     url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016427/1016429.html', contact: '家族介護者教室：なごや福祉用具プラザ（052-851-0051） / 家族介護慰労金：各区役所 福祉課',
     welnet: false, cond: (s) => s.concerns?.includes('nursing') || s.elderlyMembers?.some(e => ['c4','c5'].includes(e.careLevel)),
-    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009334.html', label: '支所区民福祉課一覧' }],
+    extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/kaigo/yobou/toiawase/woichiran.html', label: '各区役所福祉課' }],
   },
   {
     id: 50, title: '名古屋市地域支えあい事業（委託）', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
