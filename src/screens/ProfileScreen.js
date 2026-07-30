@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
   StyleSheet,
@@ -44,6 +44,51 @@ export default function ProfileScreen({ navigation }) {
   const [disabledMembers, setDisabledMembers] = useState([]);
   const [concerns, setConcerns] = useState([]);
 
+  // テスト中の入力復元用（一時的な対応）：前回の入力内容を自動で復元・自動で保存
+  const DRAFT_KEY = 'nagoyaApp_draftProfile_v1';
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.localStorage) { setDraftLoaded(true); return; }
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        setAge(d.age ?? '');
+        setGender(d.gender ?? '');
+        setMarital(d.marital ?? '');
+        setLiving(d.living ?? '');
+        setEmployment(d.employment ?? '');
+        setHousing(d.housing ?? '');
+        setIncome(d.income ?? '');
+        setDistrict(d.district ?? '');
+        setChildren(d.children ?? []);
+        setChildIdx(d.childIdx ?? 0);
+        setElderlyMembers(d.elderlyMembers ?? []);
+        setElderlyIdx(d.elderlyIdx ?? 0);
+        setDisabledMembers(d.disabledMembers ?? []);
+        setConcerns(d.concerns ?? []);
+      }
+    } catch {
+      // 復元失敗時はそのまま空フォームで続行
+    }
+    setDraftLoaded(true);
+  }, []);
+
+  // 入力するたびに自動保存（復元が終わるまでは何も保存しない）
+  useEffect(() => {
+    if (!draftLoaded) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        age, gender, marital, living, employment, housing, income, district,
+        children, childIdx, elderlyMembers, elderlyIdx, disabledMembers, concerns,
+      }));
+    } catch {
+      // 保存失敗は無視
+    }
+  }, [draftLoaded, age, gender, marital, living, employment, housing, income, district, children, childIdx, elderlyMembers, elderlyIdx, disabledMembers, concerns]);
+
   const addChild = () => {
     const i = childIdx; setChildIdx(i + 1);
     setChildren([...children, { id: i, age: '', status: '' }]);
@@ -70,10 +115,12 @@ export default function ProfileScreen({ navigation }) {
       if (c.status === 'special' && !autoConcerns.includes('child_disability')) autoConcerns.push('child_disability');
       if (['nursery','elementary','junior','high'].includes(c.status) && !autoConcerns.includes('childcare')) autoConcerns.push('childcare');
     });
-    // 高齢者がいる場合
-    if (elderlyMembers.length > 0 && !autoConcerns.includes('nursing')) autoConcerns.push('nursing');
+    // 高齢者がいる場合、または本人が65歳以上の場合
+    if ((elderlyMembers.length > 0 || parseInt(age) >= 65) && !autoConcerns.includes('nursing')) autoConcerns.push('nursing');
     // 就労状況から
     if (employment === 'unemployed' && !autoConcerns.includes('work')) autoConcerns.push('work');
+    // 学生（中高大学生）の場合は教育関連を自動追加
+    if (employment === 'student' && !autoConcerns.includes('education')) autoConcerns.push('education');
     // 収入から
     if ((income === 'low' || income === 'nontax') && !autoConcerns.includes('money')) autoConcerns.push('money');
 
@@ -93,7 +140,7 @@ export default function ProfileScreen({ navigation }) {
           ...(autoConcerns.includes('pregnant') ? ['pregnant'] : []),
           ...(employment === 'unemployed' ? ['unemployed'] : []),
           ...(income === 'low' || income === 'nontax' ? ['lowincome'] : []),
-          ...(elderlyMembers.length > 0 ? ['elderly'] : []),
+          ...(elderlyMembers.length > 0 || parseInt(age) >= 65 ? ['elderly'] : []),
         ],
       },
     });
@@ -126,8 +173,8 @@ export default function ProfileScreen({ navigation }) {
         {/* ── 本人情報 ── */}
         <Sec icon="person-outline" title="本人の情報">
           <View style={styles.field}>
-            <Text style={styles.lbl}>年齢</Text>
-            <TextInput style={styles.input} value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="例：35" placeholderTextColor={colors.textTertiary} maxLength={3} />
+            <Text style={styles.lbl}>年齢（中学生以上・上限なし）</Text>
+            <TextInput style={styles.input} value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="例：13" placeholderTextColor={colors.textTertiary} maxLength={3} />
           </View>
           <View style={styles.field}>
             <Text style={styles.lbl}>性別</Text>
@@ -321,7 +368,7 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
+  safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
   hero: { padding: spacing.lg, paddingBottom: spacing.md },
   cityBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.primaryBg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 10 },
   cityBadgeTxt: { fontSize: 11, fontWeight: font.medium, color: colors.primary },

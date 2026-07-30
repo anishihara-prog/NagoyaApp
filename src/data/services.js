@@ -329,14 +329,6 @@ export const SERVICES = [
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   },
   {
-    id: 41, title: 'ひとり親家庭への就業支援（自立支援教育訓練給付金）', cat: 'work', urgent: false, target: 'adult', grayzone: false,
-    desc: 'ひとり親が資格取得のために受講した教育訓練の経費を一部給付する制度。',
-    detail: '【対象】児童扶養手当受給者または同等の所得水準のひとり親\n【給付内容】受講費用の60%（上限20万円）\n【対象講座】介護福祉士・保育士・看護師等\n【申請先】各区役所 民生子ども課（受講前に相談・申請が必要）',
-    url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009381/1009382.html', contact: '各区役所 民生子ども課',
-    welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
-    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
-  },
-  {
     id: 42, title: '母子生活支援施設（緊急の住まいと生活支援）', cat: 'housing', urgent: true, target: 'adult', grayzone: false,
     desc: 'DV被害・住居喪失等で緊急に住まいが必要なひとり親家庭が入所できる施設。',
     detail: '【対象】配偶者のいない女性と子ども（18歳未満）で、住居・生活に困難がある方\n【主な入所理由】DV被害・経済的困窮・住宅困難・精神的不安定など\n【内容】住居の提供・生活支援員による生活相談・就労支援・保育サービス\n【費用】収入に応じた利用料（低額または無料）',
@@ -677,7 +669,7 @@ export const SERVICES = [
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   },
   {
-    id: 127, title: '自立支援給付金', cat: 'work', urgent: false, target: 'adult', grayzone: false,
+    id: 127, title: 'ひとり親家庭への就業支援（自立支援教育訓練給付金）', cat: 'work', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭の親向けの資格取得支援制度。自立支援教育訓練給付金と高等職業訓練促進給付金の2種類があります（要事前相談）。',
     detail: '【対象】市内在住の20歳未満の児童を扶養するひとり親家庭の母または父\n【自立支援教育訓練給付金】就職・転職・スキルアップのための指定講座受講費用の60%（上限20万円）を助成。専門実践教育訓練給付は修学年数×40万円（最大160万円）\n【高等職業訓練促進給付金】6か月以上の資格取得訓練中の生活費を支給。非課税世帯：月額100,000〜140,000円 / 課税世帯：月額70,500〜110,500円\n【修了支援給付金】50,000円または25,000円\n【事前相談が必要】いずれの給付金も申請前に区役所への事前相談が必要',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009381/1009382.html', contact: '区役所民生子ども課または支所区民福祉課／子ども青少年局 052-972-2522',

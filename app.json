@@ -5,8 +5,13 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "entryPoint": "./App.js",
-"ios": {
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "enabled": false
+    },
+    "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "jp.nagoya.serviceapp2"
     },
@@ -16,7 +21,13 @@
         "backgroundColor": "#0C447C"
       }
     },
-"plugins": [
+    "extra": {
+      "eas": {
+        "projectId": "d9746670-40bc-4d05-bbb4-abece4ebeae8"
+      }
+    },
+    "owner": "gaojianmingzi19",
+    "plugins": [
       "expo-font"
     ]
   }

@@ -6,8 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
+import { SERVICES } from '../data/services';
 
-const SUGGEST_CHIPS = ['申請方法・窓口は？', '必要書類を教えて', '締切・申請期限は？', '所得制限の詳細は？'];
+const SERVICES_TEXT = SERVICES.map(
+  (s) => `■${s.title}\n${s.detail}\nURL: ${s.url}`
+).join('\n\n');
 
 function buildProfileText(profile) {
   const p = [];
@@ -28,22 +31,77 @@ function buildProfileText(profile) {
   return p.length ? p.join('、') : 'プロフィール未入力';
 }
 
+function stripMarkdown(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .trim();
+}
+
+function buildSuggestChips(profile) {
+  const chips = [];
+
+  if (profile.children?.length > 0) {
+    chips.push('子どもの医療費助成はある？');
+    chips.push('子どもが不登校、相談先は？');
+    chips.push('保育所の申請方法は？');
+  }
+  if (profile.sit?.includes('pregnant')) {
+    chips.push('妊娠中に受けられるサービスは？');
+    chips.push('出産後に必要な手続きは？');
+  }
+  if (profile.marital === 'div' || profile.marital === 'widow') {
+    chips.push('ひとり親への支援はある？');
+    chips.push('養育費の相談先は？');
+  }
+  if (profile.elderlyMembers?.length > 0) {
+    chips.push('介護保険の申請方法は？');
+    chips.push('認知症の相談はどこ？');
+  }
+  if (profile.sit?.includes('nursing')) {
+    chips.push('介護中に使えるサービスは？');
+  }
+  if (profile.disabledMembers?.includes('hikikomori')) {
+    chips.push('ひきこもりの相談先は？');
+  }
+  if (profile.disabledMembers?.includes('disabled') || profile.disabledMembers?.includes('gray')) {
+    chips.push('障害福祉サービスの申請は？');
+  }
+  if (profile.sit?.includes('unemployed')) {
+    chips.push('就労支援はどこに相談？');
+  }
+  if (profile.sit?.includes('lowincome')) {
+    chips.push('生活費の支援はある？');
+  }
+
+  if (chips.length === 0) {
+    chips.push('申請できるサービスを教えて');
+    chips.push('名古屋市の相談窓口は？');
+    chips.push('手続きに必要な書類は？');
+  }
+
+  return chips.slice(0, 5);
+}
+
 export default function ChatScreen({ navigation, route }) {
   const { profile } = route.params;
   const profileText = buildProfileText(profile);
+  const suggestChips = buildSuggestChips(profile);
+
+  const welcomeText =
+    `こんにちは！名古屋市のサービスについて、何でもお気軽にご質問ください。\n\nプロフィール：${profileText}\n\nたとえばこんなことを聞けます👇`;
+
   const [messages, setMessages] = useState([
-    {
-      id: 1, role: 'bot',
-      text: `こんにちは！名古屋市のサービスについてお気軽にご質問ください。\n\nあなたのプロフィール：${profileText}\n\nこの情報をもとに、申請窓口や必要書類なども具体的にご案内します。`,
-      showChips: true,
-    },
+    { id: 1, role: 'bot', text: welcomeText, chips: suggestChips },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
   const chatHistory = useRef([
-    { role: 'user', content: `私のプロフィール：${profileText}。名古屋市のサービスについて質問します。名古屋市公式サイト（https://www.city.nagoya.jp）の情報をもとに、具体的なサービス名・申請先・必要書類・URLを含めて日本語で簡潔に答えてください。` },
-    { role: 'assistant', content: `了解しました。${profileText}の方ですね。名古屋市のサービスについて何でもご質問ください。` },
+    { role: 'user', parts: [{ text: `私のプロフィール：${profileText}。名古屋市のサービスについて質問します。` }] },
+    { role: 'model', parts: [{ text: `了解しました。${profileText}の方ですね。名古屋市のサービスについて何でもご質問ください。` }] },
   ]);
 
   useEffect(() => {
@@ -57,30 +115,36 @@ export default function ChatScreen({ navigation, route }) {
 
     const userMsg = { id: Date.now(), role: 'user', text: msg };
     setMessages((prev) => [...prev, userMsg]);
-    chatHistory.current.push({ role: 'user', content: msg });
+    chatHistory.current.push({ role: 'user', parts: [{ text: msg }] });
     setLoading(true);
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? '',
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `あなたは名古屋市の行政サービスに詳しいアシスタントです。ユーザープロフィール：${profileText}。名古屋市公式サイト(https://www.city.nagoya.jp)のサービスを踏まえ、具体的なサービス名・申請先の区役所窓口・必要書類・公式URLを含めて、日本語で簡潔に回答してください。箇条書きを適宜使い、見やすく整理してください。`,
-          messages: chatHistory.current,
-        }),
-      });
+      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: `あなたは名古屋市の行政サービスに詳しいアシスタントです。ユーザープロフィール：${profileText}。\n\n以下は名古屋市の公式サービス一覧（最新情報）です。この情報をもとに、具体的なサービス名・申請先・必要書類・公式URLを含めて日本語で簡潔に回答してください。箇条書きを適宜使い、見やすく整理してください。\n\n${SERVICES_TEXT}` }],
+            },
+            contents: chatHistory.current,
+            generationConfig: { maxOutputTokens: 1000 },
+          }),
+        }
+      );
       const data = await res.json();
-      const reply = data.content?.map((b) => (b.type === 'text' ? b.text : '')).join('') || 'エラーが発生しました。';
-      chatHistory.current.push({ role: 'assistant', content: reply });
-      setMessages((prev) => [...prev, { id: Date.now() + 1, role: 'bot', text: reply, showChips: false }]);
+      if (!res.ok) {
+        const errMsg = data.error?.message ?? `APIエラー (${res.status})`;
+        throw new Error(errMsg);
+      }
+      const reply = stripMarkdown(data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'エラーが発生しました。');
+      chatHistory.current.push({ role: 'model', parts: [{ text: reply }] });
+      setMessages((prev) => [...prev, { id: Date.now() + 1, role: 'bot', text: reply }]);
     } catch (e) {
-      setMessages((prev) => [...prev, { id: Date.now() + 1, role: 'bot', text: '通信エラーが発生しました。インターネット接続を確認してください。', showChips: false }]);
+      const errText = e.message ? `エラー: ${e.message}` : '通信エラーが発生しました。インターネット接続を確認してください。';
+      setMessages((prev) => [...prev, { id: Date.now() + 1, role: 'bot', text: errText }]);
     } finally {
       setLoading(false);
     }
@@ -119,9 +183,9 @@ export default function ChatScreen({ navigation, route }) {
                 </Text>
               </View>
               <Text style={[styles.ts, msg.role === 'user' && styles.tsRight]}>{now()}</Text>
-              {msg.showChips && (
+              {msg.chips?.length > 0 && (
                 <View style={styles.chips}>
-                  {SUGGEST_CHIPS.map((chip) => (
+                  {msg.chips.map((chip) => (
                     <TouchableOpacity key={chip} style={styles.chip} onPress={() => sendMessage(chip)} activeOpacity={0.7}>
                       <Text style={styles.chipText}>{chip}</Text>
                     </TouchableOpacity>
@@ -144,7 +208,7 @@ export default function ChatScreen({ navigation, route }) {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="サービスについて質問してください..."
+            placeholder="何でも質問してください..."
             placeholderTextColor={colors.textTertiary}
             multiline
             returnKeyType="send"
@@ -165,7 +229,7 @@ export default function ChatScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
+  safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
   flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md, gap: 8 },
   backBtn: { padding: 4 },

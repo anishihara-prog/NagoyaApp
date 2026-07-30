@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Linking, Alert,
+  StyleSheet, Linking, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,13 +13,12 @@ export default function DetailScreen({ navigation, route }) {
   const svc = SERVICES.find(s => s.id === svcId);
   const catColor = CAT_COLORS[svc.cat] || { bg: colors.bgSecondary, text: colors.textSecondary };
 
-  const openURL = async (url) => {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('エラー', 'URLを開けませんでした');
+  const openURL = (url) => {
+    if (Platform.OS === 'web') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
     }
+    Linking.openURL(url).catch(() => Alert.alert('エラー', 'URLを開けませんでした'));
   };
 
   // URL が空・未設定の場合は名古屋市トップページへフォールバック
@@ -149,21 +148,22 @@ export default function DetailScreen({ navigation, route }) {
           activeOpacity={0.8}
         >
           <Ionicons name="globe-outline" size={16} color={colors.primary} />
-          <Text style={styles.linkBtnText}>名古屋市公式サイトで確認する</Text>
+          <Text style={styles.linkBtnText}>{svc.urlLabel || '名古屋市公式サイトで確認する'}</Text>
           <Ionicons name="open-outline" size={14} color={colors.primary} />
         </TouchableOpacity>
 
-        {svc.externalUrl && (
+        {(svc.extraLinks || []).map((link, i) => (
           <TouchableOpacity
+            key={i}
             style={styles.externalLinkBtn}
-            onPress={() => openURL(svc.externalUrl)}
+            onPress={() => openURL(link.url)}
             activeOpacity={0.8}
           >
             <Ionicons name="exit-outline" size={16} color="#6A1B9A" />
-            <Text style={styles.externalLinkBtnText}>外部サイトで詳細を見る</Text>
+            <Text style={styles.externalLinkBtnText}>{link.label || '外部サイトで詳細を見る'}</Text>
             <Ionicons name="open-outline" size={14} color="#6A1B9A" />
           </TouchableOpacity>
-        )}
+        ))}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -172,7 +172,7 @@ export default function DetailScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
+  safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md, gap: 8 },
   backBtn: { padding: 4 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: font.semibold, color: colors.textPrimary },

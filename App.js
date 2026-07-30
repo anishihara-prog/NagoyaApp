@@ -2,8 +2,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-gesture-handler';
+import { Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ServicesProvider } from './src/context/ServicesContext';
 import ChatScreen from './src/screens/ChatScreen';
 import DetailScreen from './src/screens/DetailScreen';
 import DisasterScreen from './src/screens/DisasterScreen';
@@ -15,7 +17,9 @@ const Stack = createStackNavigator();
 export default function App() {
 
   return (
+    <ServicesProvider>
     <SafeAreaProvider>
+      <View style={Platform.OS === 'web' ? { flex: 1, height: '100vh', overflow: 'hidden' } : { flex: 1 }}>
       <NavigationContainer>
         <StatusBar style="dark" />
         <Stack.Navigator
@@ -32,6 +36,8 @@ export default function App() {
           <Stack.Screen name="Disaster" component={DisasterScreen} />
         </Stack.Navigator>
       </NavigationContainer>
+      </View>
     </SafeAreaProvider>
+    </ServicesProvider>
   );
 }
