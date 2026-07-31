@@ -124,6 +124,12 @@ export default function DetailScreen({ navigation, route }) {
             <Text style={styles.contactLabel}>申請・問合せ先</Text>
           </View>
           <Text style={styles.contactValue}>{svc.contact}</Text>
+          {svc.hours && (
+            <View style={styles.hoursRow}>
+              <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+              <Text style={styles.hoursValue}>{svc.hours}</Text>
+            </View>
+          )}
         </View>
 
         {/* ウェルネット名古屋ボタン */}
@@ -227,6 +233,8 @@ const styles = StyleSheet.create({
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   contactLabel: { fontSize: 12, fontWeight: font.semibold, color: colors.primary },
   contactValue: { fontSize: 14, color: colors.textPrimary, fontWeight: font.medium },
+  hoursRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginTop: 7 },
+  hoursValue: { fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 18 },
   welnetBtn: {
     marginHorizontal: spacing.lg, marginBottom: 10,
     flexDirection: 'row', alignItems: 'center', gap: 10,
