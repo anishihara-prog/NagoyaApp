@@ -18,7 +18,7 @@ export const SERVICES = [
   {
     id: 3, title: '保育所・認定こども園の入所申請', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '就労・病気等で保育が必要な場合に申請。4月入所は毎年10月から受付開始。',
-    detail: '【対象年齢】子ども5歳以下\n【対象】就労・病気・介護等の理由で家庭での保育が困難な0〜5歳児\n【申請先】お住まいの区役所 民生子ども課\n【4月入所申請】前年10〜11月ごろ受付\n【年度途中入所】随時申請受付\n【必要書類】就労証明書、健康保険証、マイナンバー関係書類 等\n【インターネット申請】「ここなご」で保育所等の利用申込・認定変更申請がオンラインで可能',
+    detail: '【対象年齢】子ども5歳以下\n【対象】就労・病気・介護等の理由で家庭での保育が困難な0〜5歳児\n【申請先】お住まいの区役所 民生子ども課\n【4月入所申請】前年10〜11月ごろ受付\n【年度途中入所】随時申請受付\n【必要書類】就労証明書、健康保険証、マイナンバー関係書類 等',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1009125/1009270/1034086.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => s.children?.some(c => (c.age || c) <= 5) || s.concerns?.includes('childcare') || s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -141,7 +141,7 @@ export const SERVICES = [
   {
     id: 18, title: '国民健康保険料の軽減制度', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: '低所得世帯は保険料が2割〜7割軽減。申請不要で自動適用。',
-    detail: '【軽減割合】世帯所得に応じて7割・5割・2割の軽減\n【手続き】原則、申請不要で自動適用\n【減免の申請には期限】原則6月の本算定通知書受領後、その年度最後の納付月の末日までに申請が必要（4〜5月は暫定賦課期間のため申請不可）\n【減免の審査時間】審査・決定通知の発送までに2か月以上かかる場合あり\n【インターネット申請】保険料の減免・産前産後減額・所得申告等が電子申請で手続き可能',
+    detail: '【軽減割合】世帯所得に応じて7割・5割・2割の軽減\n【手続き】原則、申請不要で自動適用\n【減免の申請には期限】原則6月の本算定通知書受領後、その年度最後の納付月の末日までに申請が必要（4〜5月は暫定賦課期間のため申請不可）\n【減免の審査時間】審査・決定通知の発送までに2か月以上かかる場合あり',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011793/1011807/1011810.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', externalLabel: '各区役所保険年金課', contact: '各区役所 保険年金課',
     welnet: false, cond: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
@@ -387,7 +387,7 @@ export const SERVICES = [
   {
     id: 47, title: '在宅高齢者訪問理美容サービス事業', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
     desc: '外出困難な高齢者の自宅に理容師・美容師が訪問。年2回まで費用を一部助成。',
-    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護3〜5で外出が困難な在宅高齢者\n【内容】理容師または美容師が自宅へ訪問しカット等を実施\n【利用回数】年6回を限度\n【自己負担】2,000円（税込）／回\n【インターネット申請】訪問理美容サービスの利用申請はオンライン申請フォームから可能',
+    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護3〜5で外出が困難な在宅高齢者\n【内容】理容師または美容師が自宅へ訪問しカット等を実施\n【利用回数】年6回を限度\n【自己負担】2,000円（税込）／回',
     url: 'https://www.city.nagoya.jp/kenkofukushi/page/0000132076.html', contact: '名古屋市役所健康福祉局高齢福祉課 在宅福祉担当\n【電話番号】052-972-2544',
     welnet: false, cond: (s) => parseInt(s.age) >= 65 && (s.concerns?.includes('nursing') || s.sit?.includes('elderly') || s.elderlyMembers?.some(e => ['c1','c2','c3','c4','c5','s1','s2'].includes(e.careLevel))),
   },
