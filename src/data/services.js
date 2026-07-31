@@ -2,7 +2,7 @@ export const SERVICES = [
   {
     id: 1, title: '児童手当', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '0歳から高校修了まで、月額1万〜1.5万円を支給。第3子以降は月3万円（令和6年10月改正）。',
-    detail: '【対象年齢】子ども18歳以下\n【対象】高校修了前（18歳到達後の最初の3月31日まで）の子どもを養育している方\n【支給額】3歳未満：月15,000円 / 3歳〜高校修了：月10,000円（第3子以降30,000円）\n【所得制限】なし（令和6年10月改正）\n【申請先】お住まいの区役所 民生子ども課\n【申請時期】出生・転入後15日以内に申請',
+    detail: '【対象年齢】子ども18歳以下\n【対象】高校修了前（18歳到達後の最初の3月31日まで）の子どもを養育している方\n【支給額】3歳未満：月15,000円 / 3歳〜高校修了：月10,000円（第3子以降30,000円）\n【所得制限】なし（令和6年10月改正）\n【申請先】お住まいの区役所 民生子ども課\n【申請時期】出生・転入後15日以内に申請\n【インターネット申請】名古屋市電子申請サービスから認定請求など各種手続きがオンラインで可能',
     url: 'https://www.city.nagoya.jp/kodomoseishonen/page/0000034404.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => s.children?.some(c => c.age <= 18),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -10,7 +10,7 @@ export const SERVICES = [
   {
     id: 2, title: '子ども医療費助成（なごや子育て支援）', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '高校3年生まで医療費の自己負担分を名古屋市が助成します。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】名古屋市在住の高校3年生（18歳に達した日以降の最初の3月31日）まで\n【助成内容】保険診療の自己負担分を全額助成（入院・通院とも）\n【申請先】各区役所 民生子ども課\n【受給者証】交付された受給者証を医療機関窓口に提示するだけでOK',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】名古屋市在住の高校3年生（18歳に達した日以降の最初の3月31日）まで\n【助成内容】保険診療の自己負担分を全額助成（入院・通院とも）\n【申請先】各区役所 民生子ども課\n【受給者証】交付された受給者証を医療機関窓口に提示するだけでOK\n【インターネット申請】子ども医療証の交付申請や変更届が電子申請サービスで手続き可能',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1008992/1009002/1009009.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => s.children?.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -18,7 +18,7 @@ export const SERVICES = [
   {
     id: 3, title: '保育所・認定こども園の入所申請', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '就労・病気等で保育が必要な場合に申請。4月入所は毎年10月から受付開始。',
-    detail: '【対象年齢】子ども5歳以下\n【対象】就労・病気・介護等の理由で家庭での保育が困難な0〜5歳児\n【申請先】お住まいの区役所 民生子ども課\n【4月入所申請】前年10〜11月ごろ受付\n【年度途中入所】随時申請受付\n【必要書類】就労証明書、健康保険証、マイナンバー関係書類 等',
+    detail: '【対象年齢】子ども5歳以下\n【対象】就労・病気・介護等の理由で家庭での保育が困難な0〜5歳児\n【申請先】お住まいの区役所 民生子ども課\n【4月入所申請】前年10〜11月ごろ受付\n【年度途中入所】随時申請受付\n【必要書類】就労証明書、健康保険証、マイナンバー関係書類 等\n【インターネット申請】「ここなご」で保育所等の利用申込・認定変更申請がオンラインで可能',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1009125/1009270/1034086.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => s.children?.some(c => (c.age || c) <= 5) || s.concerns?.includes('childcare') || s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -43,7 +43,7 @@ export const SERVICES = [
   {
     id: 6, title: '児童扶養手当', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: 'ひとり親家庭に支給される手当。月額最大約4.5万円。所得制限あり。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】離婚・死別等でひとり親となり、18歳未満の子を養育している方\n【支給額】第1子：月額最大48,050円（所得により減額あり）',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】離婚・死別等でひとり親となり、18歳未満の子を養育している方\n【支給額】第1子：月額最大48,050円（所得により減額あり）\n【インターネット申請】口座変更や証書再発行など一部手続きは電子申請サービスで申請可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009385/1009387.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -51,7 +51,7 @@ export const SERVICES = [
   {
     id: 7, title: 'ひとり親家庭等医療費助成', cat: 'health', urgent: false, target: 'child', grayzone: false,
     desc: 'ひとり親家庭の医療費自己負担を助成。所得制限あり。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】18歳未満の子どもを持つひとり親家庭の親と子ども\n【助成内容】保険診療の自己負担分を助成',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】18歳未満の子どもを持つひとり親家庭の親と子ども\n【助成内容】保険診療の自己負担分を助成\n【インターネット申請】医療証交付申請や変更届・再交付申請が電子申請サービスで手続き可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009392/1009393.html', contact: '各区役所保険年金課福祉医療担当',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
@@ -111,7 +111,7 @@ export const SERVICES = [
   {
     id: 14, title: '特定健康診査（メタボ健診）', cat: 'health', urgent: false, target: 'adult', grayzone: false,
     desc: '40〜74歳の国保加入者が対象。生活習慣病予防のための健診を実施。',
-    detail: '【対象年齢】本人40〜74歳\n【対象】名古屋市国民健康保険加入者のうち40〜74歳で、今年度特定健康診査を受けていない人\n【費用】無料〜500円程度\n【受診方法】4月ごろ送付される受診券を持参し指定医療機関で受診',
+    detail: '【対象年齢】本人40〜74歳\n【対象】名古屋市国民健康保険加入者のうち40〜74歳で、今年度特定健康診査を受けていない人\n【費用】無料〜500円程度\n【受診方法】4月ごろ送付される受診券を持参し指定医療機関で受診\n【インターネット申請】受診券の再発行手続きが電子申請サービスでオンライン可能',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011776/1034706/1011784.html', contact: '健康福祉局 生活福祉部 保険年金課 保健事業担当 052-972-2567',
     hours: '平日の夜間に集団健診を受けることができます。',
     welnet: false, cond: (s) => (parseInt(s.age) >= 40 && parseInt(s.age) <= 74) || s.concerns?.includes('health'),
@@ -141,7 +141,7 @@ export const SERVICES = [
   {
     id: 18, title: '国民健康保険料の軽減制度', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: '低所得世帯は保険料が2割〜7割軽減。申請不要で自動適用。',
-    detail: '【軽減割合】世帯所得に応じて7割・5割・2割の軽減\n【手続き】原則、申請不要で自動適用\n【減免の申請には期限】原則6月の本算定通知書受領後、その年度最後の納付月の末日までに申請が必要（4〜5月は暫定賦課期間のため申請不可）\n【減免の審査時間】審査・決定通知の発送までに2か月以上かかる場合あり',
+    detail: '【軽減割合】世帯所得に応じて7割・5割・2割の軽減\n【手続き】原則、申請不要で自動適用\n【減免の申請には期限】原則6月の本算定通知書受領後、その年度最後の納付月の末日までに申請が必要（4〜5月は暫定賦課期間のため申請不可）\n【減免の審査時間】審査・決定通知の発送までに2か月以上かかる場合あり\n【インターネット申請】保険料の減免・産前産後減額・所得申告等が電子申請で手続き可能',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011793/1011807/1011810.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', externalLabel: '各区役所保険年金課', contact: '各区役所 保険年金課',
     welnet: false, cond: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
@@ -181,7 +181,7 @@ export const SERVICES = [
   {
     id: 22, title: 'なごやジョブサポートセンター', cat: 'work', urgent: false, target: 'adult', grayzone: false,
     desc: '就職相談・セミナー・職業訓練情報を提供。若者・女性・障害者向け窓口あり。',
-    detail: '【対象】名古屋市内在住または在勤・在学の求職者\n【費用】無料\n【特徴】求職者の方一人ひとりの希望や適性に合わせ、求人紹介や履歴書の添削、面接トレーニングなど、きめ細かな就職に関する相談を無料で行っています',
+    detail: '【対象】名古屋市内在住または在勤・在学の求職者\n【費用】無料\n【特徴】求職者の方一人ひとりの希望や適性に合わせ、求人紹介や履歴書の添削、面接トレーニングなど、きめ細かな就職に関する相談を無料で行っています\n【インターネット申請】なごや就職応援ナビの予約フォームからカウンセリング・セミナー申込可',
     url: 'https://www.city.nagoya.jp/kurashi/shigoto/1016699/1016700.html',
     contact: 'なごやジョブサポートセンター 052-733-2111',
     hours: 'サービス提供時間：月〜金の9:30〜12:00、13:00〜17:00（祝日、夏季休暇、年末年始を除く。） / 月〜金・第2土（祝日、夏季休暇、年末年始を除く、第2土が祝日の場合は第3土開館）',
@@ -249,7 +249,7 @@ export const SERVICES = [
   {
     id: 29, title: '産後ケア事業（委託）', cat: 'child', urgent: true, target: 'adult', grayzone: false,
     desc: '退院後〜生後6か月に、宿泊型・通所型・訪問型で育児相談・休息支援を受けられます。',
-    detail: '【対象年齢】子ども0歳（新生児）\n【対象】名古屋市在住の産後1年未満の母子\n【内容】授乳相談・育児指導・休息支援・沐浴指導\n【種類】宿泊型（2泊3日）/ 通所型（1日）/ 訪問型\n【利用可能日数】合計7日間\n【費用】宿泊型：約7,000〜8,000円 / 通所・訪問型：約3,000〜4,000円\n【申込】各区役所 民生子ども課',
+    detail: '【対象年齢】子ども0歳（新生児）\n【対象】名古屋市在住の産後1年未満の母子\n【内容】授乳相談・育児指導・休息支援・沐浴指導\n【種類】宿泊型（2泊3日）/ 通所型（1日）/ 訪問型\n【利用可能日数】合計7日間\n【費用】宿泊型：約7,000〜8,000円 / 通所・訪問型：約3,000〜4,000円\n【申込】各区役所 民生子ども課\n【インターネット申請】妊娠32週から名古屋市電子申請システムで利用申込が可能',
     url: 'https://www.city.nagoya.jp/kodomo/ninshin/1008971/1008978.html', contact: '各区役所 民生子ども課（052-972-2629）',
     welnet: false, cond: (s) => s.sit?.includes('pregnant') || s.concerns?.includes('pregnant') || s.children.some(c => (c.age||c) === 0),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/_res/projects/default_project/_page_/001/008/978/0413tirasi.pdf', label: '産後ケア事業（委託）' }],
@@ -282,7 +282,7 @@ export const SERVICES = [
   {
     id: 33, title: '多胎児家庭支援事業（委託）', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '双子・三つ子以上の家庭向けに、教室・健診同行・電話相談・訪問支援を実施。',
-    detail: '【対象】市内在住の双子または三つ子以上の多胎児とその保護者・多胎妊婦\n【内容】オンライン多胎プレファミリー教室 / 健診同行支援 / 電話相談 / 訪問支援\n【費用】無料\n【申込】各区役所 民生子ども課\n【電話相談】一般社団法人 あいち多胎ネット　052-778-7338（月,水,金 10:00〜13:00）\n【多胎児家庭への訪問支援】愛知県助産師会　052-721-7118（月・木（祝日除く）10:00〜16:00）',
+    detail: '【対象】市内在住の双子または三つ子以上の多胎児とその保護者・多胎妊婦\n【内容】オンライン多胎プレファミリー教室 / 健診同行支援 / 電話相談 / 訪問支援\n【費用】無料\n【申込】各区役所 民生子ども課\n【電話相談】一般社団法人 あいち多胎ネット　052-778-7338（月,水,金 10:00〜13:00）\n【多胎児家庭への訪問支援】愛知県助産師会　052-721-7118（月・木（祝日除く）10:00〜16:00）\n【インターネット申請】あいち多胎ネット等の専用フォームから教室・訪問支援を申込可能',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009013/1034075/1009021.html', contact: '一般社団法人 あいち多胎ネット 052-778-7338',
     hours: '相談時間 月、水、金 10:00〜13:00',
     welnet: false, cond: (s) => s.children.length >= 2,
@@ -320,7 +320,7 @@ export const SERVICES = [
   {
     id: 38, title: 'ひとり親家庭等生活支援事業（ヘルパー派遣・子ども一時預かり）', cat: 'welfare', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭に家事ヘルパーを派遣・子どもの一時預かりを実施する名古屋市委託事業。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の児童を養育しているひとり親家庭\n【サービス①：生活援助】調理・洗濯・掃除・買い物・食事介助など\n【サービス②：子育て支援】名古屋市指定保育施設での一時的な児童預かり\n【費用】所得に応じた自己負担あり',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の児童を養育しているひとり親家庭\n【サービス①：生活援助】調理・洗濯・掃除・買い物・食事介助など\n【サービス②：子育て支援】名古屋市指定保育施設での一時的な児童預かり\n【費用】所得に応じた自己負担あり\n【インターネット申請】名古屋市電子申請サービスから一部手続きのオンライン申請が可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009392/1009395.html', contact: '各区役所 民生子ども課',
     hours: '8:00〜20:00(日曜は、9:00〜17:00) / 8:00〜22:00（事業者の営業時間外の利用はできません）',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
@@ -353,7 +353,7 @@ export const SERVICES = [
   {
     id: 43, title: '緊急通報事業「あんしん電話」', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり暮らし・高齢者のみ世帯向け。ボタン一つで消防・緊急連絡先につながる端末を貸与。',
-    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】市内在住のひとり暮らし高齢者または高齢者のみの世帯\n【内容】緊急通報端末を貸与。ボタンを押すと消防署または受信センターへ通報。\n【費用】所得に応じた負担あり',
+    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】市内在住のひとり暮らし高齢者または高齢者のみの世帯\n【内容】緊急通報端末を貸与。ボタンを押すと消防署または受信センターへ通報。\n【費用】所得に応じた負担あり\n【インターネット申請】あんしん電話の新規申請・変更届等は電子申請サービスで可能',
     url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016427/1016428.html', contact: '各区役所 福祉課',
     hours: '24時間・年中無休',
     welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0,
@@ -370,7 +370,7 @@ export const SERVICES = [
   {
     id: 45, title: '配食サービス（介護保険・自立支援型）', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
     desc: '要介護・要支援認定者等に1日1食を上限に弁当を配達。配達時に安否確認も実施。',
-    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護・要支援認定者、または「介護予防・生活支援サービス事業対象者」と判定された方\n【内容】自宅への弁当配達（1日1食まで）+ 配達時の安否確認',
+    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護・要支援認定者、または「介護予防・生活支援サービス事業対象者」と判定された方\n【内容】自宅への弁当配達（1日1食まで）+ 配達時の安否確認\n【インターネット申請】配食サービスの利用開始・変更申請はスマホ・PCの電子申請で可能',
     url: 'https://www.kaigo-wel.city.nagoya.jp/view/kaigo/company/shitei/haishoku/', urlLabel: 'NAGOYAかいごネット公式サイトで確認する',
     contact: '＜生活援助型・自立支援型配食サービス事業者の指定に関すること＞\n【担当課】名古屋市役所健康福祉局高齢福祉部介護保険課居宅指定担当\n【電話番号】052-212-6534\n\n＜生活援助型配食サービス・電子申請に関すること＞\n【担当課】名古屋市役所健康福祉局高齢福祉部介護保険課給付担当\n【電話番号】052-972-2594\n\n＜自立支援型配食サービス＞\n【担当課】名古屋市役所健康福祉局高齢福祉部高齢福祉課介護予防・いきいき支援センター担当\n【電話番号】052-972-2540',
     hours: '月〜金の8:45〜17:15',
@@ -387,7 +387,7 @@ export const SERVICES = [
   {
     id: 47, title: '在宅高齢者訪問理美容サービス事業', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
     desc: '外出困難な高齢者の自宅に理容師・美容師が訪問。年2回まで費用を一部助成。',
-    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護3〜5で外出が困難な在宅高齢者\n【内容】理容師または美容師が自宅へ訪問しカット等を実施\n【利用回数】年6回を限度\n【自己負担】2,000円（税込）／回',
+    detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】要介護3〜5で外出が困難な在宅高齢者\n【内容】理容師または美容師が自宅へ訪問しカット等を実施\n【利用回数】年6回を限度\n【自己負担】2,000円（税込）／回\n【インターネット申請】訪問理美容サービスの利用申請はオンライン申請フォームから可能',
     url: 'https://www.city.nagoya.jp/kenkofukushi/page/0000132076.html', contact: '名古屋市役所健康福祉局高齢福祉課 在宅福祉担当\n【電話番号】052-972-2544',
     welnet: false, cond: (s) => parseInt(s.age) >= 65 && (s.concerns?.includes('nursing') || s.sit?.includes('elderly') || s.elderlyMembers?.some(e => ['c1','c2','c3','c4','c5','s1','s2'].includes(e.careLevel))),
   },
@@ -401,7 +401,7 @@ export const SERVICES = [
   {
     id: 49, title: '家族介護者教室・家族介護慰労金', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
     desc: '介護する家族向けの教室開催と、介護保険未利用の要介護4・5の方を介護する家族への慰労金支給。',
-    detail: '【対象年齢】高齢者同居\n【家族介護者教室】介護技術・知識を学ぶ教室。各区で定期開催。無料。\n【家族介護慰労金】要介護4または5で、1年以上介護保険サービスを利用していない方を在宅介護している家族に年額10万円を支給\n【申請先】各区役所 福祉課',
+    detail: '【対象年齢】高齢者同居\n【家族介護者教室】介護技術・知識を学ぶ教室。各区で定期開催。無料。\n【家族介護慰労金】要介護4または5で、1年以上介護保険サービスを利用していない方を在宅介護している家族に年額10万円を支給\n【申請先】各区役所 福祉課\n【インターネット申請】家族介護慰労金・寝具貸与の申請/届出は電子申請サービスで可能',
     url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016427/1016429.html', contact: '家族介護者教室：なごや福祉用具プラザ（052-851-0051） / 家族介護慰労金：各区役所 福祉課',
     welnet: false, cond: (s) => s.concerns?.includes('nursing') || s.concerns?.includes('dementia') || s.sit?.includes('nursing') || s.elderlyMembers?.some(e => ['c4','c5'].includes(e.careLevel)),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/kaigo/yobou/toiawase/woichiran.html', label: '各区役所福祉課' }],
@@ -582,7 +582,7 @@ export const SERVICES = [
   {
     id: 70, title: 'BABY YELL!（ナゴヤわくわくプレゼント事業）', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '名古屋で子育てをスタートするご家庭に50,000ポイント分の商品をプレゼント。',
-    detail: '【対象年齢】子ども0歳（新生児）\n【対象】名古屋市在住で、新たに子育てをスタートするご家庭（出産・転入）\n【内容】50,000ポイント分の商品（おむつ・ミルク・ベビー用品等）をプレゼント\n【申請方法】出産、転入した後、約2か月以内に受託事業者から簡易書留で案内状が郵送されます。出生届などの際の事前申請は不要\n【ポイントの有効期限にご注意ください】',
+    detail: '【対象年齢】子ども0歳（新生児）\n【対象】名古屋市在住で、新たに子育てをスタートするご家庭（出産・転入）\n【内容】50,000ポイント分の商品（おむつ・ミルク・ベビー用品等）をプレゼント\n【申請方法】出産、転入した後、約2か月以内に受託事業者から簡易書留で案内状が郵送されます。出生届などの際の事前申請は不要\n【ポイントの有効期限にご注意ください】\n【インターネット申請】専用ウェブサイトにログインしプレゼント申込みが可能',
     url: 'https://www.city.nagoya.jp/kodomo/ninshin/1008958/1008959.html', contact: 'ナゴヤわくわくプレゼント事業「BABY YELL!」カタログギフト係コールセンター　0120-956-028（フリーコール）',
     hours: '受付時間 9:00〜18:00（12月31日〜1月4日を除く毎日）',
     welnet: false, cond: (s) => s.children.some(c => (c.age||c) === 0) || s.concerns?.includes('pregnant'),
@@ -629,7 +629,7 @@ export const SERVICES = [
   {
     id: 76, title: '子どもの権利相談室「なごもっか」', cat: 'child', urgent: false, target: 'child', grayzone: true,
     desc: '子どもが自分の権利について相談できる専門窓口。いじめ・虐待・悩みなど秘密厳守。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】名古屋市内の子ども（年齢制限なし）\n【相談内容】いじめ・虐待・家族のこと・学校のこと・友人関係\n【秘密厳守】相談内容は本人の同意なしに第三者に伝えません\n【費用】無料',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】名古屋市内の子ども（年齢制限なし）\n【相談内容】いじめ・虐待・家族のこと・学校のこと・友人関係\n【秘密厳守】相談内容は本人の同意なしに第三者に伝えません\n【費用】無料\n【インターネット申請】LINE公式アカウントから面談予約の申込みが可能',
     url: 'https://www.city.nagoya.jp/kurashi/shouhi/1016390/1016409.html', contact: '子ども専用フリーダイヤル（無料）：0120-874-994（はなし きくよ）／大人相談用：052-211-8640／ファクス：052-211-8072',
     hours: '月 11:00〜19:00 （受付は18:30） / 火、木、金 11:00〜21:00 （受付は20:30）',
     welnet: false, cond: (s) => s.children.length > 0 || s.concerns?.includes('dv') || s.concerns?.includes('education'),
@@ -693,7 +693,7 @@ export const SERVICES = [
   {
     id: 84, title: '母子父子寡婦福祉資金貸付金', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭等の経済的自立のための低利・無利子の貸付制度。生活費・修学費など。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の子を扶養するひとり親（母子・父子）/ 寡婦・寡夫など\n【貸付の種類】生活資金 / 事業開始資金 / 技能習得資金 / 就職支度資金 / 修学資金 / 住宅資金等\n【利率】無利子または年1.0%（連帯保証人あり無利子）\n【申請先】各区役所 民生子ども課',
+    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の子を扶養するひとり親（母子・父子）/ 寡婦・寡夫など\n【貸付の種類】生活資金 / 事業開始資金 / 技能習得資金 / 就職支度資金 / 修学資金 / 住宅資金等\n【利率】無利子または年1.0%（連帯保証人あり無利子）\n【申請先】各区役所 民生子ども課\n【インターネット申請】名古屋市電子申請サービスから一部手続きがオンライン申請可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009385/1009388.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -731,7 +731,7 @@ export const SERVICES = [
   {
     id: 88, title: '後期高齢者医療制度', cat: 'health', urgent: false, target: 'adult', grayzone: false,
     desc: '75歳以上（または65歳以上で一定の障害）が加入する医療保険制度。',
-    detail: '【対象年齢】本人75歳以上 / 高齢者同居\n【対象】①75歳以上の方 ②65〜74歳で一定の障害がある方（申請により加入）\n【自己負担】原則1割（現役並み所得者は3割）\n【保険料】前年の所得をもとに計算\n【申請・問合せ】各区役所 保険年金課\n【加入手続き】75歳到達時は自動加入（手続き不要）',
+    detail: '【対象年齢】本人75歳以上 / 高齢者同居\n【対象】①75歳以上の方 ②65〜74歳で一定の障害がある方（申請により加入）\n【自己負担】原則1割（現役並み所得者は3割）\n【保険料】前年の所得をもとに計算\n【申請・問合せ】各区役所 保険年金課\n【加入手続き】75歳到達時は自動加入（手続き不要）\n【インターネット申請】後期高齢者医療の届出・保険料口座振替がWeb・電子申請で可能',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1016449/index.html', contact: '各区役所 保険年金課',
     welnet: false, cond: (s) => parseInt(s.age) >= 75 || s.elderlyMembers?.some(e => parseInt(e.age) >= 75),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
@@ -746,7 +746,7 @@ export const SERVICES = [
   {
     id: 90, title: 'きずなネット（防災情報メール配信サービス）', cat: 'disaster', urgent: false, target: 'both', grayzone: false,
     desc: '避難情報・気象警報などをスマホにメール配信。登録無料。地域を選んで受け取れる。',
-    detail: '【サービス名】きずなネット（名古屋市防災情報メール配信）\n【内容】避難指示・避難勧告・気象警報・土砂災害警戒情報等を配信\n【登録方法】スマートフォンからメール登録（無料）\n【配信地域】区・学区単位で選択可能',
+    detail: '【サービス名】きずなネット（名古屋市防災情報メール配信）\n【内容】避難指示・避難勧告・気象警報・土砂災害警戒情報等を配信\n【登録方法】スマートフォンからメール登録（無料）\n【配信地域】区・学区単位で選択可能\n【インターネット申請】空メール送信で防災情報メール配信サービスに登録可能',
     url: 'https://www.city.nagoya.jp/bousaiportal/jouhou/1036432/1013386.html', contact: '防災危機管理局 防災企画課 防災啓発・人材育成担当（052-972-3527）',
     welnet: false, cond: (s) => s.concerns?.includes('disaster'),
   },
@@ -842,7 +842,7 @@ export const SERVICES = [
   {
     id: 102, title: '出産育児一時金（健康保険）', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: '出産時に健康保険から50万円が支給されます。直接支払制度で病院に直接支払われるケースが多いです。',
-    detail: '【支給額】50万円（産科医療補償制度加入施設での出産）\n【対象】健康保険・国民健康保険の加入者または被扶養者で、妊娠85日以上の出産\n【手続き】直接支払制度：病院が保険者に直接請求（窓口負担なし）\n【注意】差額が生じた場合は後日請求可。医療機関で直接支払制度の合意文書を作成していても、出産日時点で名古屋市の国民健康保険を脱退（資格喪失）していた場合は、一時金を返還する必要があります',
+    detail: '【支給額】50万円（産科医療補償制度加入施設での出産）\n【対象】健康保険・国民健康保険の加入者または被扶養者で、妊娠85日以上の出産\n【手続き】直接支払制度：病院が保険者に直接請求（窓口負担なし）\n【注意】差額が生じた場合は後日請求可。医療機関で直接支払制度の合意文書を作成していても、出産日時点で名古屋市の国民健康保険を脱退（資格喪失）していた場合は、一時金を返還する必要があります\n【インターネット申請】差額分の出産育児一時金は電子申請から申請可能',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011758/1011763/1011768.html', contact: '各区役所 保険年金課',
     welnet: false, cond: (s) => s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '各区役所 保険年金課一覧' }],
@@ -928,7 +928,7 @@ export const SERVICES = [
   {
     id: 115, title: '高校生等奨学給付金（市）', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '低所得世帯の高校生に対する名古屋市の奨学給付金制度。',
-    detail: '【対象年齢】本人15〜18歳 / 子ども1歳以下 / 子ども15〜18歳\n【対象】高校生等のいる住民税非課税世帯（名古屋市内在籍）\n【手続き】Webフォームにて受付\n【支給額】国公立　年額60,000円　私立　年額72,000円',
+    detail: '【対象年齢】本人15〜18歳 / 子ども1歳以下 / 子ども15〜18歳\n【対象】高校生等のいる住民税非課税世帯（名古屋市内在籍）\n【手続き】Webフォームにて受付\n【支給額】国公立　年額60,000円　私立　年額72,000円\n【インターネット申請】名古屋市奨学金Webフォームからオンライン申請可能',
     url: 'https://www.city.nagoya.jp/kodomo/schools/1016760/1016797/1016801.html', contact: '名古屋市教育委員会学事課　050-1721-4806',
     welnet: false, cond: (s) => (s.children?.some(c => (c.age||c) >= 15 && (c.age||c) <= 18) || (parseInt(s.age) >= 15 && parseInt(s.age) <= 18)) && (s.income === 'low' || s.income === 'nontax'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/_res/projects/default_project/_page_/001/016/801/r8syougakukin.pdf', label: '名古屋市奨学金（高等学校給付型奨学金）' }],
