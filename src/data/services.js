@@ -135,7 +135,7 @@ export const SERVICES = [
     id: 17, title: '市民税減税', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: '名古屋市は市民税を独自に5%減税中。低所得者は非課税または減免の対象に。',
     detail: '【名古屋市独自の5%減税】市民税（個人）を5%減額。自動適用。\n【非課税の目安】単身者は年収100万円以下など\n【申請先】市税事務所',
-    url: 'https://www.city.nagoya.jp/kurashi/zeikin/1037356/1011880/1012157/1033970.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/shisetsu/1015763/1015815.html', externalLabel: '市税事務所', contact: '財政局税務部市民税課市民税担当 052-972-2352',
+    url: 'https://www.city.nagoya.jp/kurashi/zeikin/1037356/1011880/1012157/1033970.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/shisetsu/1015763/1015815.html', externalLabel: '市税事務所一覧', contact: '財政局税務部市民税課市民税担当 052-972-2352',
     welnet: false, cond: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
   },
   {
@@ -822,13 +822,6 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016573/index.html', contact: '各区役所福祉課障害福祉課',
     welnet: false, cond: (s) => s.concerns?.includes('transport') || s.disabledMembers?.length > 0 || s.sit?.includes('disabled'),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/soudan/fukushikakari.html', label: '各区役所福祉課障害福祉担当一覧' }],
-  },
-  {
-    id: 128, title: '高齢者向け交通料金等の軽減', cat: 'elderly', urgent: false, target: 'adult', grayzone: false,
-    desc: '高齢者向けに市バス・地下鉄の交通料金を軽減する制度（敬老パス）。',
-    detail: '【対象年齢】本人64歳以上 / 高齢者同居\n【敬老パス】65歳以上：市バス・地下鉄を年間1,000円〜5,000円で利用可\n【新たに65歳になる方】誕生日の約3か月前に、手続き案内が届きます\n【65歳以上で現在持っていない方】「敬老パス各種オンライン申請」または区役所保険年金課の窓口で申請\n【注意】敬老パスは満65歳の誕生日以降に申請可',
-    url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016534/index.html', contact: '敬老パスコールセンター（052-766-5500）',
-    welnet: false, cond: (s) => s.concerns?.includes('transport') || parseInt(s.age) >= 64 || s.elderlyMembers?.length > 0,
   },
   {
     id: 100, title: '名古屋市動物愛護センター（ペット相談・譲渡）', cat: 'admin', urgent: false, target: 'both', grayzone: false,

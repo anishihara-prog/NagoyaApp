@@ -158,6 +158,18 @@ export default function DetailScreen({ navigation, route }) {
           <Ionicons name="open-outline" size={14} color={colors.primary} />
         </TouchableOpacity>
 
+        {svc.externalUrl && (
+          <TouchableOpacity
+            style={styles.externalLinkBtn}
+            onPress={() => openURL(svc.externalUrl)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="exit-outline" size={16} color="#6A1B9A" />
+            <Text style={styles.externalLinkBtnText}>{svc.externalLabel || '外部サイトで詳細を見る'}</Text>
+            <Ionicons name="open-outline" size={14} color="#6A1B9A" />
+          </TouchableOpacity>
+        )}
+
         {(svc.extraLinks || []).map((link, i) => (
           <TouchableOpacity
             key={i}
