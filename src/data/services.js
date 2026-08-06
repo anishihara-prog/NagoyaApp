@@ -20,7 +20,7 @@ export const SERVICES = [
     desc: '就労・病気等で保育が必要な場合に申請。4月入所は毎年10月から受付開始。',
     detail: '【対象年齢】子ども5歳以下\n【対象】就労・病気・介護等の理由で家庭での保育が困難な0〜5歳児\n【申請先】お住まいの区役所 民生子ども課\n【4月入所申請】前年10〜11月ごろ受付\n【年度途中入所】随時申請受付\n【必要書類】就労証明書、健康保険証、マイナンバー関係書類 等',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1009125/1009270/1034086.html', contact: '各区役所 民生子ども課',
-    welnet: false, cond: (s) => s.children?.some(c => (c.age || c) <= 5) || s.concerns?.includes('childcare') || s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
+    welnet: false, cond: (s) => s.children?.some(c => (c.age || c) <= 5) || s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
   },
   {
