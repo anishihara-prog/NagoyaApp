@@ -10,9 +10,9 @@ export const SERVICES = [
   {
     id: 2, title: '子ども医療費助成（なごや子育て支援）', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '高校3年生まで医療費の自己負担分を名古屋市が助成します。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】名古屋市在住の高校3年生（18歳に達した日以降の最初の3月31日）まで\n【助成内容】保険診療の自己負担分を全額助成（入院・通院とも）\n【申請先】各区役所 民生子ども課\n【受給者証】交付された受給者証を医療機関窓口に提示するだけでOK\n【インターネット申請】子ども医療証の交付申請や変更届が電子申請サービスで手続き可能',
+    detail: '【対象年齢】子ども18歳以下\n【対象】名古屋市在住の高校3年生（18歳に達した日以降の最初の3月31日）まで\n【助成内容】保険診療の自己負担分を全額助成（入院・通院とも）\n【申請先】各区役所 民生子ども課\n【受給者証】交付された受給者証を医療機関窓口に提示するだけでOK\n【インターネット申請】子ども医療証の交付申請や変更届が電子申請サービスで手続き可能',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1008992/1009002/1009009.html', contact: '各区役所 民生子ども課',
-    welnet: false, cond: (s) => s.children?.length > 0,
+    welnet: false, cond: (s) => s.children?.some(c => c.age <= 18),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
   },
   {
