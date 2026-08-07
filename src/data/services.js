@@ -43,7 +43,7 @@ export const SERVICES = [
   {
     id: 6, title: '児童扶養手当', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: 'ひとり親家庭に支給される手当。月額最大約4.5万円。所得制限あり。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】離婚・死別等でひとり親となり、18歳未満の子を養育している方\n【支給額】第1子：月額最大48,050円（所得により減額あり）\n【インターネット申請】口座変更や証書再発行など一部手続きは電子申請サービスで申請可能',
+    detail: '【対象】離婚・死別等でひとり親となり、18歳未満の子を養育している方\n【支給額】第1子：月額最大48,050円（所得により減額あり）\n【インターネット申請】口座変更や証書再発行など一部手続きは電子申請サービスで申請可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009385/1009387.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -51,7 +51,7 @@ export const SERVICES = [
   {
     id: 7, title: 'ひとり親家庭等医療費助成', cat: 'health', urgent: false, target: 'child', grayzone: false,
     desc: 'ひとり親家庭の医療費自己負担を助成。所得制限あり。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】18歳未満の子どもを持つひとり親家庭の親と子ども\n【助成内容】保険診療の自己負担分を助成\n【インターネット申請】医療証交付申請や変更届・再交付申請が電子申請サービスで手続き可能',
+    detail: '【対象】18歳未満の子どもを持つひとり親家庭の親と子ども\n【助成内容】保険診療の自己負担分を助成\n【インターネット申請】医療証交付申請や変更届・再交付申請が電子申請サービスで手続き可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009392/1009393.html', contact: '各区役所保険年金課福祉医療担当',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
@@ -266,7 +266,7 @@ export const SERVICES = [
   {
     id: 31, title: 'ファミリー・サポート・センター（のびのび子育てサポート）', cat: 'child', urgent: false, target: 'child', grayzone: false,
     desc: '子どもの預かり・送迎を地域の会員が互いに助け合う名古屋市委託の事業。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】生後57日〜小学6年生の子どもを持つ保護者\n【利用内容】保育所の送迎・一時預かり・習い事の送迎など\n【費用】1時間800〜1,000円程度',
+    detail: '【対象】生後57日〜小学6年生の子どもを持つ保護者\n【利用内容】保育所の送迎・一時預かり・習い事の送迎など\n【費用】1時間800〜1,000円程度',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1034344/1009276/1034087.html', contact: '本部（名古屋市子ども青少年局子育て支援部子育て支援課内）電話番号：052-962-5102',
     welnet: false, cond: (s) => s.children.length > 0,
     extraLinks: [{ url: 'https://www.kosodate.city.nagoya.jp/kids/nobinobi.html', label: 'のびのび子育てサポート事業（ファミリー・サポート・センター事業）' }, { url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009115/1034344/1009276/1009278.html', label: 'のびのび子育てサポート事業　お問い合せ先' }],
@@ -290,7 +290,7 @@ export const SERVICES = [
   {
     id: 34, title: 'なごや未来っ子応援制度「ぴよか」', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '18歳未満の子がいる家庭・妊婦に「ぴよか」カードを交付。協賛店で割引等の特典あり。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】市内在住で18歳未満の子どものいる家庭（妊婦も対象）\n【内容】協賛店舗・施設で「ぴよか」カードを提示すると独自の割引・特典が受けられる\n【費用】無料\n【交付先】郵便番号460-8508　名古屋市中区三の丸三丁目1番1号　名古屋市子ども青少年局子育て支援部子育て支援課あて',
+    detail: '【対象】市内在住で18歳未満の子どものいる家庭（妊婦も対象）\n【内容】協賛店舗・施設で「ぴよか」カードを提示すると独自の割引・特典が受けられる\n【費用】無料\n【交付先】郵便番号460-8508　名古屋市中区三の丸三丁目1番1号　名古屋市子ども青少年局子育て支援部子育て支援課あて',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009013/1034072/1009016.html', contact: '子ども青少年局 子育て支援部 子育て支援課 子育て支援担当　052-972-3083',
     welnet: false, cond: (s) => s.children.length > 0 || s.concerns?.includes('pregnant'),
   },
@@ -320,7 +320,7 @@ export const SERVICES = [
   {
     id: 38, title: 'ひとり親家庭等生活支援事業（ヘルパー派遣・子ども一時預かり）', cat: 'welfare', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭に家事ヘルパーを派遣・子どもの一時預かりを実施する名古屋市委託事業。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の児童を養育しているひとり親家庭\n【サービス①：生活援助】調理・洗濯・掃除・買い物・食事介助など\n【サービス②：子育て支援】名古屋市指定保育施設での一時的な児童預かり\n【費用】所得に応じた自己負担あり\n【インターネット申請】名古屋市電子申請サービスから一部手続きのオンライン申請が可能',
+    detail: '【対象】20歳未満の児童を養育しているひとり親家庭\n【サービス①：生活援助】調理・洗濯・掃除・買い物・食事介助など\n【サービス②：子育て支援】名古屋市指定保育施設での一時的な児童預かり\n【費用】所得に応じた自己負担あり\n【インターネット申請】名古屋市電子申請サービスから一部手続きのオンライン申請が可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009392/1009395.html', contact: '各区役所 民生子ども課',
     hours: '8:00〜20:00(日曜は、9:00〜17:00) / 8:00〜22:00（事業者の営業時間外の利用はできません）',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0,
@@ -345,7 +345,7 @@ export const SERVICES = [
   {
     id: 42, title: '母子生活支援施設（緊急の住まいと生活支援）', cat: 'housing', urgent: true, target: 'adult', grayzone: false,
     desc: 'DV被害・住居喪失等で緊急に住まいが必要なひとり親家庭が入所できる施設。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】配偶者のいない女性と子ども（18歳未満）で、住居・生活に困難がある方\n【主な入所理由】DV被害・経済的困窮・住宅困難・精神的不安定など\n【内容】住居の提供・生活支援員による生活相談・就労支援・保育サービス\n【費用】収入に応じた利用料（低額または無料）',
+    detail: '【対象】配偶者のいない女性と子ども（18歳未満）で、住居・生活に困難がある方\n【主な入所理由】DV被害・経済的困窮・住宅困難・精神的不安定など\n【内容】住居の提供・生活支援員による生活相談・就労支援・保育サービス\n【費用】収入に応じた利用料（低額または無料）',
     url: 'https://aiboren.jp/shisetsu/', urlLabel: '愛知県母子寡婦福祉連合会サイトで確認する', contact: '愛知県　福祉局　児童家庭課　052-954-6281',
     welnet: false, cond: (s) => s.gender === 'female' && (s.marital === 'div' || s.marital === 'widow' || s.marital === 'single') && s.children?.length > 0 && (s.housing === 'rental' || s.housing === 'other_housing' || s.income === 'low' || s.income === 'nontax' || s.concerns?.includes('dv') || s.concerns?.includes('housing_concern') || s.concerns?.includes('money')),
     extraLinks: [{ url: 'https://www.pref.aichi.jp/soshiki/jidoukatei/0000011250.html', label: '愛知県公式サイト' }],
@@ -613,7 +613,7 @@ export const SERVICES = [
   {
     id: 74, title: 'なごやフレンドリーナウ（不登校支援）', cat: 'child', urgent: false, target: 'child', grayzone: true,
     desc: '心理的な理由で登校できない小中学生と保護者の教育相談機関。学校を通じて申込。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】心理的な理由によって登校できない名古屋市内の小中学生とその保護者\n【内容】個別相談・グループ活動・学習支援・心理的サポート\n【受付時間】月曜日から金曜日（祝日、年末年始を除く）、午前8時45分から午後5時30分まで\n【申込方法】見学（要予約）後、在籍する学校を通じて申込\n【費用】無料',
+    detail: '【対象】心理的な理由によって登校できない名古屋市内の小中学生とその保護者\n【内容】個別相談・グループ活動・学習支援・心理的サポート\n【受付時間】月曜日から金曜日（祝日、年末年始を除く）、午前8時45分から午後5時30分まで\n【申込方法】見学（要予約）後、在籍する学校を通じて申込\n【費用】無料',
     url: 'https://www.city.nagoya.jp/kodomo/schools/1015850/1017055.html', contact: '〈浄心・笠寺の見学予約〉052-521-9640／〈鶴舞の見学予約〉052-262-2320／〈大曽根の見学予約〉052-750-8971／通所せず電話相談のみ「ハートフレンドなごや」052-683-8222',
     hours: '応対時間：月〜金（祝日、年末年始を除く）、8:45〜17:30',
     welnet: false, cond: (s) => s.children?.some(c => c.status === 'futoko') || s.concerns?.includes('education') || s.concerns?.includes('hikikomori_concern'),
@@ -622,7 +622,7 @@ export const SERVICES = [
   {
     id: 75, title: '児童相談所（中央・西部・東部）', cat: 'child', urgent: true, target: 'child', grayzone: false,
     desc: '18歳未満の子どもに関するあらゆる相談窓口。虐待・発達・非行・障害等。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】18歳未満の子どもに関する相談（本人・家族・関係者どなたでも）\n【相談内容】虐待・発達障害・非行・障害・家庭環境・不登校など\n【緊急時】24時間365日対応\n【費用】無料',
+    detail: '【対象】18歳未満の子どもに関する相談（本人・家族・関係者どなたでも）\n【相談内容】虐待・発達障害・非行・障害・家庭環境・不登校など\n【緊急時】24時間365日対応\n【費用】無料',
     url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009321/1009322.html', contact: '中央：052-757-6111/西部：052-365-3231 / 東部：052-899-4630',
     hours: '児童相談受付時間 月〜金(ただし祝日及び祝除く)の8:45〜17:15',
     welnet: false, cond: (s) => s.children.length > 0 || s.concerns?.includes('dv') || s.concerns?.includes('child_disability'),
@@ -694,7 +694,7 @@ export const SERVICES = [
   {
     id: 84, title: '母子父子寡婦福祉資金貸付金', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭等の経済的自立のための低利・無利子の貸付制度。生活費・修学費など。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】20歳未満の子を扶養するひとり親（母子・父子）/ 寡婦・寡夫など\n【貸付の種類】生活資金 / 事業開始資金 / 技能習得資金 / 就職支度資金 / 修学資金 / 住宅資金等\n【利率】無利子または年1.0%（連帯保証人あり無利子）\n【申請先】各区役所 民生子ども課\n【インターネット申請】名古屋市電子申請サービスから一部手続きがオンライン申請可能',
+    detail: '【対象】20歳未満の子を扶養するひとり親（母子・父子）/ 寡婦・寡夫など\n【貸付の種類】生活資金 / 事業開始資金 / 技能習得資金 / 就職支度資金 / 修学資金 / 住宅資金等\n【利率】無利子または年1.0%（連帯保証人あり無利子）\n【申請先】各区役所 民生子ども課\n【インターネット申請】名古屋市電子申請サービスから一部手続きがオンライン申請可能',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009385/1009388.html', contact: '各区役所 民生子ども課',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
@@ -709,7 +709,7 @@ export const SERVICES = [
   {
     id: 127, title: 'ひとり親家庭への就業支援（自立支援教育訓練給付金）', cat: 'work', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭の親向けの資格取得支援制度。自立支援教育訓練給付金と高等職業訓練促進給付金の2種類があります（要事前相談）。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】市内在住の20歳未満の児童を扶養するひとり親家庭の母または父\n【自立支援教育訓練給付金】就職・転職・スキルアップのための指定講座受講費用の60%（上限20万円）を助成。専門実践教育訓練給付は修学年数×40万円（最大160万円）\n【高等職業訓練促進給付金】6か月以上の資格取得訓練中の生活費を支給。非課税世帯：月額100,000〜140,000円 / 課税世帯：月額70,500〜110,500円\n【修了支援給付金】50,000円または25,000円\n【事前相談が必要】いずれの給付金も申請前に区役所への事前相談が必要',
+    detail: '【対象】市内在住の20歳未満の児童を扶養するひとり親家庭の母または父\n【自立支援教育訓練給付金】就職・転職・スキルアップのための指定講座受講費用の60%（上限20万円）を助成。専門実践教育訓練給付は修学年数×40万円（最大160万円）\n【高等職業訓練促進給付金】6か月以上の資格取得訓練中の生活費を支給。非課税世帯：月額100,000〜140,000円 / 課税世帯：月額70,500〜110,500円\n【修了支援給付金】50,000円または25,000円\n【事前相談が必要】いずれの給付金も申請前に区役所への事前相談が必要',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009381/1009382.html', contact: '区役所民生子ども課または支所区民福祉課／子ども青少年局 052-972-2522',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }, { url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009334.html', label: '支所区民福祉課一覧' }],
@@ -936,7 +936,7 @@ export const SERVICES = [
   {
     id: 117, title: '令和8年度ひとり親家庭等への大学受験料等補助', cat: 'money', urgent: false, target: 'adult', grayzone: false,
     desc: 'ひとり親家庭の子どもの大学受験料等を補助する名古屋市の制度。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】市内在住で、次のいずれかの要件を満たす中学3年生及び高校3年生世代の子ども等がいる世帯\n・児童扶養手当受給相当の所得水準のひとり親世帯\n・住民税非課税世帯（生活保護受給世帯を含む）\n・対象の子が学習支援事業に登録している世帯\n【補助内容】\n・高校3年生世代：大学等受験料（上限53,000円）、模試費用（上限8,000円）\n・中学3年生：模試費用（上限6,000円）\n【受付期間】令和8年11月4日（水曜日）～令和9年3月31日（水曜日）予定',
+    detail: '【対象】市内在住で、次のいずれかの要件を満たす中学3年生及び高校3年生世代の子ども等がいる世帯\n・児童扶養手当受給相当の所得水準のひとり親世帯\n・住民税非課税世帯（生活保護受給世帯を含む）\n・対象の子が学習支援事業に登録している世帯\n【補助内容】\n・高校3年生世代：大学等受験料（上限53,000円）、模試費用（上限8,000円）\n・中学3年生：模試費用（上限6,000円）\n【受付期間】令和8年11月4日（水曜日）～令和9年3月31日（水曜日）予定',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009396/1049088.html', contact: '子ども青少年局 子ども未来企画部 子ども未来企画課 子ども等の支援の推進担　052-972-3199',
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   },
@@ -1039,7 +1039,7 @@ export const SERVICES = [
   {
     id: 140, title: 'ひとり親世帯向市営住宅', cat: 'housing', urgent: false, target: 'both', grayzone: false,
     desc: '20歳未満の子がいる住宅困窮ひとり親世帯を対象にした市営住宅の入居あっせん制度（年2回募集・抽選）。',
-    detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】住宅に困窮している20歳未満の子がいるひとり親世帯で、市内在住または在勤、所得制限あり\n【内容】市営住宅の福祉向募集による入居あっせん（公開抽選で入居者を決定）\n【募集時期】年2回（6月・11月）',
+    detail: '【対象】住宅に困窮している20歳未満の子がいるひとり親世帯で、市内在住または在勤、所得制限あり\n【内容】市営住宅の福祉向募集による入居あっせん（公開抽選で入居者を決定）\n【募集時期】年2回（6月・11月）',
     url: 'https://www.city.nagoya.jp/kodomo/hitorioya/1009392/1009394.html',
     contact: '子ども青少年局 子ども未来企画部 子ども未来企画課 052-972-2522',
     welnet: false,
