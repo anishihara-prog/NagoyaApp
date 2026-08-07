@@ -115,7 +115,7 @@ export const SERVICES = [
     detail: '【対象年齢】本人40〜74歳\n【対象】名古屋市国民健康保険加入者のうち40〜74歳で、今年度特定健康診査を受けていない人\n【費用】無料〜500円程度\n【受診方法】4月ごろ送付される受診券を持参し指定医療機関で受診\n【インターネット申請】受診券の再発行手続きが電子申請サービスでオンライン可能',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011776/1034706/1011784.html', contact: '健康福祉局 生活福祉部 保険年金課 保健事業担当 052-972-2567',
     hours: '平日の夜間に集団健診を受けることができます。',
-    welnet: false, cond: (s) => (parseInt(s.age) >= 40 && parseInt(s.age) <= 74) || s.concerns?.includes('health'),
+    welnet: false, cond: (s) => parseInt(s.age) >= 40 && parseInt(s.age) <= 74,
   },
   {
     id: 15, title: 'がん検診（胃・大腸・肺・乳・子宮頸がん）', cat: 'health', urgent: false, target: 'adult', grayzone: false,
