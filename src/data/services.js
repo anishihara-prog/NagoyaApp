@@ -137,7 +137,7 @@ export const SERVICES = [
     desc: '名古屋市は市民税を独自に5%減税中。低所得者は非課税または減免の対象に。',
     detail: '【名古屋市独自の5%減税】市民税（個人）を5%減額。自動適用。\n【非課税の目安】単身者は年収100万円以下など\n【申請先】市税事務所',
     url: 'https://www.city.nagoya.jp/kurashi/zeikin/1037356/1011880/1012157/1033970.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/shisetsu/1015763/1015815.html', externalLabel: '市税事務所一覧', contact: '財政局税務部市民税課市民税担当 052-972-2352',
-    welnet: false, cond: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
+    welnet: false, cond: (s) => parseInt(s.age) >= 20,
   },
   {
     id: 18, title: '国民健康保険料の軽減制度', cat: 'money', urgent: false, target: 'adult', grayzone: false,
@@ -145,7 +145,6 @@ export const SERVICES = [
     detail: '【軽減割合】世帯所得に応じて7割・5割・2割の軽減\n【手続き】原則、申請不要で自動適用\n【減免の申請には期限】原則6月の本算定通知書受領後、その年度最後の納付月の末日までに申請が必要（4〜5月は暫定賦課期間のため申請不可）\n【減免の審査時間】審査・決定通知の発送までに2か月以上かかる場合あり',
     url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011793/1011807/1011810.html', externalUrl: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', externalLabel: '各区役所保険年金課', contact: '各区役所 保険年金課',
     welnet: false, cond: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
-    extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/hoken/1011736/1011821/1011823.html', label: '区役所保険年金課一覧' }],
   },
   {
     id: 19, title: '生活困窮者自立支援', cat: 'welfare', urgent: true, target: 'adult', grayzone: false,
