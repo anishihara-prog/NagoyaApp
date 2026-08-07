@@ -66,9 +66,10 @@ export const SERVICES = [
   {
     id: 9, title: '母子健康手帳の交付', cat: 'health', urgent: true, target: 'adult', grayzone: false,
     desc: '妊娠届出後に母子健康手帳を交付。各種健診・予防接種の記録に使用。',
-    detail: '【手続き】妊娠11週以内に届出推奨\n【窓口】保健センター\n【持参物】マイナンバーカード等\n【同時に受け取れるもの】妊婦健診受診票、育児パッケージ案内 等',
+    detail: '【手続き】妊娠11週以内に届出推奨\n【窓口】保健センター\n【持参物】マイナンバーカード等\n【同時に受け取れるもの】妊婦健診受診票、育児パッケージ案内 等\n【名古屋市妊婦・子育て家庭応援金】妊娠届出をした市民は対象。妊娠届出日の1〜2か月後に妊婦応援金（5万円）、妊娠32週経過後の1〜2か月後に子育て家庭応援金（胎児1人あたり5万円、双子は10万円）の申請書が届く。二次元コードから電子申請も可能',
     url: 'https://www.city.nagoya.jp/kodomo/ninshin/1008951/1008955.html', externalUrl: 'https://www.kaigo-wel.city.nagoya.jp/view/kaigo/yobou/toiawase/ichiran.html', externalLabel: '各区保健センター', contact: '各区保健センター',
     welnet: false, cond: (s) => s.sit?.includes('pregnant') || s.concerns?.includes('pregnant'),
+    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/ninshin/1008958/1008960.html', label: '名古屋市妊婦・子育て家庭応援金について' }],
   },
   {
     id: 10, title: 'こんにちは赤ちゃん訪問（赤ちゃん訪問事業）', cat: 'child', urgent: false, target: 'child', grayzone: false,
