@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
   StyleSheet,
@@ -41,53 +41,11 @@ export default function ProfileScreen({ navigation }) {
   const [elderlyMembers, setElderlyMembers] = useState([]);
   const [elderlyIdx, setElderlyIdx] = useState(0);
 
+  const [adultMembers, setAdultMembers] = useState([]);
+  const [adultIdx, setAdultIdx] = useState(0);
+
   const [disabledMembers, setDisabledMembers] = useState([]);
   const [concerns, setConcerns] = useState([]);
-
-  // テスト中の入力復元用（一時的な対応）：前回の入力内容を自動で復元・自動で保存
-  const DRAFT_KEY = 'nagoyaApp_draftProfile_v1';
-  const [draftLoaded, setDraftLoaded] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.localStorage) { setDraftLoaded(true); return; }
-    try {
-      const raw = window.localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const d = JSON.parse(raw);
-        setAge(d.age ?? '');
-        setGender(d.gender ?? '');
-        setMarital(d.marital ?? '');
-        setLiving(d.living ?? '');
-        setEmployment(d.employment ?? '');
-        setHousing(d.housing ?? '');
-        setIncome(d.income ?? '');
-        setDistrict(d.district ?? '');
-        setChildren(d.children ?? []);
-        setChildIdx(d.childIdx ?? 0);
-        setElderlyMembers(d.elderlyMembers ?? []);
-        setElderlyIdx(d.elderlyIdx ?? 0);
-        setDisabledMembers(d.disabledMembers ?? []);
-        setConcerns(d.concerns ?? []);
-      }
-    } catch {
-      // 復元失敗時はそのまま空フォームで続行
-    }
-    setDraftLoaded(true);
-  }, []);
-
-  // 入力するたびに自動保存（復元が終わるまでは何も保存しない）
-  useEffect(() => {
-    if (!draftLoaded) return;
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        age, gender, marital, living, employment, housing, income, district,
-        children, childIdx, elderlyMembers, elderlyIdx, disabledMembers, concerns,
-      }));
-    } catch {
-      // 保存失敗は無視
-    }
-  }, [draftLoaded, age, gender, marital, living, employment, housing, income, district, children, childIdx, elderlyMembers, elderlyIdx, disabledMembers, concerns]);
 
   const addChild = () => {
     const i = childIdx; setChildIdx(i + 1);
@@ -102,6 +60,14 @@ export default function ProfileScreen({ navigation }) {
   };
   const updateElderly = (id, key, val) => setElderlyMembers(elderlyMembers.map(e => e.id === id ? { ...e, [key]: val } : e));
   const removeElderly = (id) => setElderlyMembers(elderlyMembers.filter(e => e.id !== id));
+
+  const addAdult = () => {
+    const i = adultIdx; setAdultIdx(i + 1);
+    setAdultMembers([...adultMembers, { id: i, age: '', relation: '', tags: [] }]);
+  };
+  const updateAdult = (id, key, val) => setAdultMembers(adultMembers.map(a => a.id === id ? { ...a, [key]: val } : a));
+  const removeAdult = (id) => setAdultMembers(adultMembers.filter(a => a.id !== id));
+  const togAdultTag = (id, v) => setAdultMembers(adultMembers.map(a => a.id === id ? { ...a, tags: a.tags.includes(v) ? a.tags.filter(x => x !== v) : [...a.tags, v] } : a));
 
   const togDisabled = (v) => setDisabledMembers(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
   const togConcern = (v) => setConcerns(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
@@ -129,6 +95,7 @@ export default function ProfileScreen({ navigation }) {
         age, gender, marital, living, employment, housing, income, district,
         children: children.map(c => ({ age: parseInt(c.age) || 0, status: c.status })),
         elderlyMembers,
+        adultMembers,
         disabledMembers,
         concerns: autoConcerns,
         sit: [
@@ -148,7 +115,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={true}>
 
         <View style={styles.hero}>
           <View style={styles.cityBadge}>
@@ -308,8 +275,48 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.div} />
 
+        {/* ── 成人家族（高齢者以外） ── */}
+        <Sec icon="body-outline" title="同居する成人家族の情報" note="ひきこもり・障害等がある高齢者以外のご家族はここに入力してください">
+          {adultMembers.map((a, idx) => (
+            <View key={a.id} style={styles.memberCard}>
+              <View style={styles.memberCardHdr}>
+                <Text style={styles.memberCardTitle}>成人家族{idx+1}人目</Text>
+                <TouchableOpacity onPress={() => removeAdult(a.id)}>
+                  <Ionicons name="close-circle-outline" size={22} color={colors.textTertiary} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.ageRow}>
+                <Text style={styles.lbl}>年齢</Text>
+                <TextInput style={[styles.input, {width:80}]} value={a.age} onChangeText={v => updateAdult(a.id,'age',v)} keyboardType="number-pad" placeholder="歳" placeholderTextColor={colors.textTertiary} maxLength={3} />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.lbl}>続柄</Text>
+                <View style={styles.trow}>
+                  {[['兄弟姉妹','sibling'],['配偶者','spouse'],['成人の子','adult_child'],['その他','other']].map(([l,v]) => (
+                    <TB key={v} label={l} active={a.relation===v} onPress={() => updateAdult(a.id,'relation',v)} style={styles.tAuto} />
+                  ))}
+                </View>
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.lbl}>障害・困難</Text>
+                <View style={styles.trow}>
+                  {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['発達障害の疑い\n（診断なし）','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
+                    <TB key={v} label={l} active={a.tags.includes(v)} onPress={() => togAdultTag(a.id,v)} style={styles.tAuto} />
+                  ))}
+                </View>
+              </View>
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addBtn} onPress={addAdult} activeOpacity={0.7}>
+            <Ionicons name="add-circle-outline" size={18} color={colors.textSecondary} />
+            <Text style={styles.addBtnTxt}>成人家族を追加</Text>
+          </TouchableOpacity>
+        </Sec>
+
+        <View style={styles.div} />
+
         {/* ── 障害・困難 ── */}
-        <Sec icon="accessibility-outline" title="障害・困難がある方" note="ご本人または同居の方にあてはまるものをすべて選択">
+        <Sec icon="accessibility-outline" title="障害・困難がある方" note="ご本人にあてはまるものを選択（同居のご家族の分は上の「同居する成人家族の情報」で入力してください）">
           <View style={styles.trow}>
             {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['発達障害の疑い\n（診断なし）','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
               <TB key={v} label={l} active={disabledMembers.includes(v)} onPress={() => togDisabled(v)} style={styles.tAuto} />

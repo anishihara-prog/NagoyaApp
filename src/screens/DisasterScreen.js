@@ -18,7 +18,7 @@ export default function DisasterScreen({ navigation, route }) {
   const { districtKey, profile } = route.params;
   const district = DISTRICTS[districtKey];
 
-  const hasElderlyOrDisabled = profile.elderlyMembers?.length > 0 || profile.disabledMembers?.length > 0 || profile.children?.some(a => a <= 5);
+  const hasElderlyOrDisabled = profile.elderlyMembers?.length > 0 || profile.disabledMembers?.length > 0 || profile.children?.some(c => (c.age ?? c) <= 5);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -29,7 +29,7 @@ export default function DisasterScreen({ navigation, route }) {
         <Text style={styles.headerTitle}>{district.name}の防災情報</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={true}>
 
         {/* 区リスクバナー */}
         <View style={styles.riskBanner}>

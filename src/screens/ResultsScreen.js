@@ -5,7 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
-import { SERVICES, CAT_LABELS, CAT_COLORS } from '../data/services';
+import { SERVICES, CAT_LABELS, CAT_COLORS, SUBCAT_LABELS } from '../data/services';
 
 // 【対象】行から年齢・対象者情報を抽出
 function getAgeLabel(detail) {
@@ -18,6 +18,23 @@ function getAgeLabel(detail) {
 
 const CATS = ['all', 'emergency', 'disaster', 'child', 'health', 'mental', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
 
+// 高齢者グループ（perElderly）の見出しラベルを「続柄（年齢）」の形で生成
+const RELATION_LABELS = { self: '本人', parent: '親', grand: '祖父母', spouse: '配偶者', other: 'その他' };
+function elderlyLabel(g) {
+  const rel = RELATION_LABELS[g.relation] || `高齢者${g.idx + 1}人目`;
+  return g.age ? `${rel}（${g.age}歳）` : rel;
+}
+function childLabel(g) {
+  return `${g.idx + 1}人目のお子さま${g.age ? `（${g.age}歳）` : ''}`;
+}
+
+// 成人家族グループ（perAdult）の見出しラベルを「続柄（年齢）」の形で生成
+const ADULT_RELATION_LABELS = { sibling: '兄弟姉妹', spouse: '配偶者', adult_child: '成人の子', other: 'その他' };
+function adultLabel(g) {
+  const rel = ADULT_RELATION_LABELS[g.relation] || `成人家族${g.idx + 1}人目`;
+  return g.age ? `${rel}（${g.age}歳）` : rel;
+}
+
 export default function ResultsScreen({ navigation, route }) {
   const { profile } = route.params;
   const [activeCat, setActiveCat] = useState('all');
@@ -27,9 +44,14 @@ export default function ResultsScreen({ navigation, route }) {
   const [drillCat, setDrillCat] = useState(null); // null | category key
   const [personViewMode, setPersonViewMode] = useState('all'); // 'all' | 'byCategory' — 人選択後のサブモード
 
+  // 本人・世帯全体向けのマッチングでは、成人家族の情報（adultMembers）を見せない。
+  // 成人家族固有の判定は下の perAdult が個別のシャドープロフィールで行うため、
+  // ここで含めてしまうと「本人向け」にその家族の情報が漏れて出てしまう。
+  const selfProfile = useMemo(() => ({ ...profile, adultMembers: [] }), [profile]);
+
   const matched = useMemo(
-    () => showAll ? SERVICES : SERVICES.filter((s) => s.cond(profile)),
-    [profile, showAll]
+    () => showAll ? SERVICES : SERVICES.filter((s) => s.cond(selfProfile)),
+    [selfProfile, showAll]
   );
 
   // 対象年齢チェック関数
@@ -66,7 +88,7 @@ export default function ResultsScreen({ navigation, route }) {
       health:             ['health', 'emergency', 'work'],
       mental_health:      ['mental', 'welfare'],
       disability_service: ['welfare', 'work'],
-      hikikomori_concern: ['welfare', 'health'],
+      hikikomori_concern: ['welfare', 'health', 'work'],
       dv:                 ['welfare', 'housing'],
       disaster:           ['emergency', 'disaster'],
       foreign:            ['welfare'],
@@ -131,10 +153,19 @@ export default function ResultsScreen({ navigation, route }) {
       return { key: elder.id ?? idx, idx, age: elder.age, relation: elder.relation, services };
     });
 
-    // 「まとめて表示」モード用：救急医療以外（防災・本人・お子さま・高齢者向けすべて）を1つにまとめる
-    const selfAndHousehold = valid.filter(s => s.cat !== 'emergency').sort(byCat);
+    // 成人家族（高齢者以外）：1人ごとに、そのタグだけを持つ仮プロフィールで改めてマッチングし直す
+    const perAdult = (profile.adultMembers || []).map((adult, idx) => {
+      const adultProfile = { ...profile, adultMembers: [adult], disabledMembers: adult.tags || [] };
+      const services = SERVICES
+        .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && s.cat !== 'child' && (s.target === 'adult' || s.target === 'both' || !s.target))
+        .filter(s => showAll || s.cond(adultProfile))
+        .filter(s => isAgeMatch(s, adultProfile))
+        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .sort(byTitle);
+      return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
+    });
 
-    return { emergency, disaster, forSelf, perChild, perElderly, selfAndHousehold };
+    return { emergency, disaster, forSelf, perChild, perElderly, perAdult };
   }, [matched, profile, showAll]);
 
   // 「人ごとに見る」モード用：救急医療・防災・本人・子ども・高齢者を1つのリストにまとめる（0件は除く）
@@ -168,14 +199,29 @@ export default function ResultsScreen({ navigation, route }) {
         icon: 'people', color: '#712B13', services: g.services,
       });
     });
+    categorized.perAdult.forEach(g => {
+      if (!g.services.length) return;
+      list.push({
+        key: 'adult-' + g.key, type: 'adult',
+        label: adultLabel(g),
+        icon: 'body', color: '#5C6BC0', services: g.services,
+      });
+    });
     return list;
   }, [categorized, profile.district]);
 
-  // 選択中の人のサービスをカテゴリ別に集計
+  // 選択中の人のサービスをカテゴリ別（高齢者・子育ては件数が多いためサブカテゴリ別）に集計
+  const DRILL_ORDER = [
+    'emergency', 'disaster',
+    'child_care', 'child_newborn', 'child_consult', 'child_other',
+    'health', 'mental', 'welfare', 'housing', 'work', 'money',
+    'elderly_consult', 'elderly_care', 'elderly_money', 'elderly_rights',
+    'admin',
+  ];
   const categorizeByCat = (services) => {
     const map = {};
-    services.forEach(s => { (map[s.cat] ||= []).push(s); });
-    return CATS.filter(c => c !== 'all' && map[c]).map(c => ({ cat: c, label: CAT_LABELS[c], services: map[c] }));
+    services.forEach(s => { const key = s.subcat || s.cat; (map[key] ||= []).push(s); });
+    return DRILL_ORDER.filter(k => map[k]).map(k => ({ cat: k, label: CAT_LABELS[k] || SUBCAT_LABELS[k], services: map[k] }));
   };
 
   const drillPersonCats = useMemo(
@@ -185,7 +231,7 @@ export default function ResultsScreen({ navigation, route }) {
 
   // 救急医療・防災のように人のラベル自体がカテゴリ名と同じ場合は重複表示しない
   const drillHeading = (person, cat) => {
-    const catLabel = CAT_LABELS[cat];
+    const catLabel = CAT_LABELS[cat] || SUBCAT_LABELS[cat];
     return person.label === catLabel ? person.label : `${person.label}・${catLabel}`;
   };
 
@@ -395,7 +441,7 @@ export default function ResultsScreen({ navigation, route }) {
         </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={true}>
 
         {viewMode === 'all' ? (
           activeCat === 'all' ? (
@@ -414,19 +460,71 @@ export default function ResultsScreen({ navigation, route }) {
                   ))}
                 </View>
               )}
-              {/* 本人・世帯向け（防災・お子さま・高齢者向けを含む全項目） */}
-              {categorized.selfAndHousehold.length > 0 && (
+              {/* 防災・備え */}
+              {categorized.disaster.length > 0 && (
                 <View>
                   <View style={styles.groupHeader}>
-                    <Ionicons name="person" size={15} color={colors.primary} />
-                    <Text style={styles.groupTitle}>本人・世帯向けサービス</Text>
-                    <Text style={styles.groupCount}>{categorized.selfAndHousehold.length}件</Text>
+                    <Ionicons name="home" size={15} color="#E65100" />
+                    <Text style={[styles.groupTitle, {color:'#E65100'}]}>防災・備え</Text>
+                    <Text style={styles.groupCount}>{categorized.disaster.length}件</Text>
                   </View>
-                  {categorized.selfAndHousehold.map(svc => (
+                  {categorized.disaster.map(svc => (
                     <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                   ))}
                 </View>
               )}
+              {/* 本人向け */}
+              {categorized.forSelf.length > 0 && (
+                <View>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="person" size={15} color={colors.primary} />
+                    <Text style={styles.groupTitle}>本人向けサービス</Text>
+                    <Text style={styles.groupCount}>{categorized.forSelf.length}件</Text>
+                  </View>
+                  {categorized.forSelf.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
+                </View>
+              )}
+              {/* お子さま向け（登録した子どもごと） */}
+              {categorized.perChild.filter(g => g.services.length > 0).map(g => (
+                <View key={'child-' + g.key}>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="happy" size={15} color="#085041" />
+                    <Text style={[styles.groupTitle, {color:'#085041'}]}>{childLabel(g)}向けサービス</Text>
+                    <Text style={styles.groupCount}>{g.services.length}件</Text>
+                  </View>
+                  {g.services.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
+                </View>
+              ))}
+              {/* 高齢者向け（登録した家族ごと） */}
+              {categorized.perElderly.filter(g => g.services.length > 0).map(g => (
+                <View key={'elderly-' + g.key}>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="people" size={15} color="#712B13" />
+                    <Text style={[styles.groupTitle, {color:'#712B13'}]}>{elderlyLabel(g)}向けサービス</Text>
+                    <Text style={styles.groupCount}>{g.services.length}件</Text>
+                  </View>
+                  {g.services.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
+                </View>
+              ))}
+              {/* 成人家族向け（登録した家族ごと） */}
+              {categorized.perAdult.filter(g => g.services.length > 0).map(g => (
+                <View key={'adult-' + g.key}>
+                  <View style={styles.groupHeader}>
+                    <Ionicons name="body" size={15} color="#5C6BC0" />
+                    <Text style={[styles.groupTitle, {color:'#5C6BC0'}]}>{adultLabel(g)}向けサービス</Text>
+                    <Text style={styles.groupCount}>{g.services.length}件</Text>
+                  </View>
+                  {g.services.map(svc => (
+                    <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
+                  ))}
+                </View>
+              ))}
             </View>
           ) : (
             // カテゴリフィルター表示
@@ -453,9 +551,9 @@ export default function ResultsScreen({ navigation, route }) {
                   <Text style={[styles.groupTitle, { color: drillPerson.color }]}>
                     {drillHeading(drillPerson, drillCat)}
                   </Text>
-                  <Text style={styles.groupCount}>{drillPerson.services.filter(s => s.cat === drillCat).length}件</Text>
+                  <Text style={styles.groupCount}>{drillPerson.services.filter(s => (s.subcat || s.cat) === drillCat).length}件</Text>
                 </View>
-                {drillPerson.services.filter(s => s.cat === drillCat).map(svc => (
+                {drillPerson.services.filter(s => (s.subcat || s.cat) === drillCat).map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
                 ))}
               </View>
