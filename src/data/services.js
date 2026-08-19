@@ -315,7 +315,7 @@ export const SERVICES = [
     id: 37, title: '名古屋市精神保健福祉センターここらぼ', cat: 'mental', urgent: false, target: 'both', grayzone: true,
     desc: 'こころの悩み・ひきこもり・依存症など幅広く相談できる市の専門機関。無料・予約制。',
     detail: '【対象】こころの健康に悩むすべての方・家族\n【相談内容】うつ・不安・ひきこもり・依存症・精神疾患など\n【費用】無料\n【場所】中村区名楽町4-7-18 名古屋市精神保健福祉センター内',
-    url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016579/1016586/1033908.html', contact: '名古屋市精神保健福祉センターここらぼ 052-483-2095',
+    url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016579/1016586/1033908.html', contact: '052-483-2095',
     welnet: false, cond: (s) => s.disabledMembers?.includes('hikikomori') || s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('mental') || s.concerns?.includes('mental_health') || s.concerns?.includes('health') || s.sit?.includes('hikikomori') || s.sit?.includes('gray') || s.sit?.includes('disabled') || true,
   },
   {
@@ -578,7 +578,7 @@ export const SERVICES = [
     detail: '【対象年齢】本人39歳以下 / 子ども3歳以下\n【対象】概ね39歳までの子ども・若者とその家族\n【来所できない方も対応】訪問支援・同行支援あり\n【相談方法】面接相談（予約制）/ LINE相談 / 電話相談\n【本部】名古屋市教育館8階（名古屋市東区泉1-1-4）\n【開所日】月〜土（祝日、年末年始除く） 10:00〜17:00\n【費用】無料',
     url: 'https://www.city.nagoya.jp/kodomo/wakamono/1034346/1016984/1037093/1016989.html', contact: '052-961-2544',
     hours: '月〜土（祝日、年末年始除く） 10:00〜17:00',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.concerns?.includes('education') || s.concerns?.includes('child_disability') || s.children?.some(c => c.status === 'futoko') || (parseInt(s.age) <= 39),
+    welnet: false, cond: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.concerns?.includes('education') || s.concerns?.includes('child_disability') || s.children?.some(c => c.status === 'futoko') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) <= 39),
   },
   {
     id: 70, title: 'BABY YELL!（ナゴヤわくわくプレゼント事業）', cat: 'child', subcat: 'child_newborn', urgent: false, target: 'child', grayzone: false,
@@ -1100,7 +1100,7 @@ export const SERVICES = [
     contact: '北部ステップアップルーム「みらie」052-325-2890／南部ステップアップルーム「ミライデア」052-684-6461（子ども青少年局青少年家庭課 052-972-3258）',
     hours: '北部：月火水金土10:00〜16:00／南部：月火水木金10:00〜16:00（祝日を除く）',
     welnet: false,
-    cond: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.children?.some(c => c.status === 'futoko') || (parseInt(s.age) >= 15 && parseInt(s.age) <= 39),
+    cond: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.children?.some(c => c.status === 'futoko') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 39) || (parseInt(s.age) >= 15 && parseInt(s.age) <= 39 && (s.employment === 'unemployed' || s.concerns?.includes('work'))),
   },
   {
     id: 147, title: '名古屋市子育て応援サイト', cat: 'child', urgent: false, target: 'both', grayzone: false,

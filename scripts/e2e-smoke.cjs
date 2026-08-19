@@ -234,6 +234,23 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5d. 20歳・女性・困りごと未選択で、ひきこもり関連サービスが年齢だけで出ないこと（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('20');
+    await page.getByText('女性', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('20歳・女性・困りごとなしで若者自立支援ステップアップ事業が出ない（年齢だけでの誤マッチの回帰確認）', !body.includes('若者自立支援ステップアップ事業'));
+    record('20歳・女性・困りごとなしで子ども・若者総合相談センターが出ない（年齢だけでの誤マッチの回帰確認）', !body.includes('子ども・若者総合相談センター'));
+    record('ここらぼのカードに組織名が二重に出ない（title/contact重複の回帰確認）', (body.match(/名古屋市精神保健福祉センターここらぼ/g) || []).length <= 1);
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
