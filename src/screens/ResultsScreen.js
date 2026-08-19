@@ -124,11 +124,23 @@ export default function ResultsScreen({ navigation, route }) {
     const disaster = valid.filter(s => s.cat === 'disaster');
 
     // 成人家族（高齢者以外）：1人ごとに、そのタグ・年齢だけを持つ仮プロフィールで改めてマッチングし直す
-    // （本人自身の年齢を引き継ぐと「本人が40〜74歳だから」等、家族のタグと無関係な理由でも
-    // マッチしてしまうため、年齢もその家族本人のものに差し替える。
+    // （本人自身の年齢・sit（本人の障害チェックや所得・就労状況から生成される世帯共通フラグ）を
+    // そのまま引き継ぐと、家族のタグと無関係な理由でもマッチしてしまうため、
+    // 年齢・sitともにその家族本人のものだけに差し替える。
     // 本人向けとの重複除外に使うため、forSelfより先に計算する）
     const perAdult = (profile.adultMembers || []).map((adult, idx) => {
-      const adultProfile = { ...profile, adultMembers: [adult], disabledMembers: adult.tags || [], age: adult.age };
+      const tags = adult.tags || [];
+      const adultProfile = {
+        ...profile,
+        adultMembers: [adult],
+        disabledMembers: tags,
+        age: adult.age,
+        sit: [
+          ...(tags.includes('disabled') ? ['disabled'] : []),
+          ...(tags.includes('gray') ? ['gray'] : []),
+          ...(tags.includes('hikikomori') ? ['hikikomori'] : []),
+        ],
+      };
       const services = SERVICES
         .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && s.cat !== 'child' && (s.target === 'adult' || s.target === 'both' || !s.target))
         .filter(s => showAll || s.cond(adultProfile))

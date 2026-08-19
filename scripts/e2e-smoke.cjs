@@ -154,7 +154,35 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
-  // ── 5. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
+  // ── 5. 本人の障害タグが、タグなしの成人家族に誤って波及しないこと（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('55');
+    await page.getByText('既婚', { exact: true }).click();
+    await page.getByText('家族と同居', { exact: true }).click();
+    await page.getByText('身体障害（手帳あり）', { exact: true }).click();
+    await page.getByText('成人家族を追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('28');
+    await page.getByText('成人の子', { exact: true }).click();
+    // タグは選択しない
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    const selfBlockStart = body.indexOf('本人向けサービス');
+    const adultBlockStart = body.indexOf('成人の子（28歳）向けサービス');
+    const selfBlockText = body.slice(selfBlockStart, adultBlockStart > selfBlockStart ? adultBlockStart : body.length);
+    const adultBlockText = adultBlockStart >= 0 ? body.slice(adultBlockStart) : '';
+
+    record('障害タグありの本人には障害者向け交通料金等の軽減が出る', selfBlockText.includes('障害者向け交通料金等の軽減'));
+    record('障害タグなしの成人家族には障害者向け交通料金等の軽減が出ない（本人のタグが誤って波及しない）', !adultBlockText.includes('障害者向け交通料金等の軽減'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2000);
@@ -175,7 +203,7 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
-  // ── 6. 異常系入力：年齢未入力・極端な値でもクラッシュしないこと ──
+  // ── 7. 異常系入力：年齢未入力・極端な値でもクラッシュしないこと ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2000);
