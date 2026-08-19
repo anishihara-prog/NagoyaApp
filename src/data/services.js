@@ -985,7 +985,7 @@ export const SERVICES = [
     hours: '火〜土 10:00〜18:00（第2・4金曜は10:00〜21:00、祝日・年末年始を除く）',
     welnet: false,
     cond: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 49) || ((parseInt(s.age) >= 15 && parseInt(s.age) <= 49) && (s.employment === 'unemployed' || s.concerns?.includes('work'))),
-    extraLinks: [{ url: 'http://nagosapo.icds.jp/', label: 'なごサポ公式サイト' }],
+    extraLinks: [{ url: 'https://nagosapo.icds.jp/', label: 'なごサポ公式サイト' }],
   },
   {
     id: 135, title: '名古屋市若者自立支援ジャンプアップ事業（まえジョブ）', cat: 'work', urgent: false, target: 'both', grayzone: true,
@@ -995,7 +995,7 @@ export const SERVICES = [
     contact: 'なごや若者サポートステーション まえジョブ担当 052-700-2396【受付時間】10:00〜18:00　休日：日・月・祝・ユースクエアの定める日・年末年始',
     welnet: false,
     cond: (s) => (parseInt(s.age) >= 15 && parseInt(s.age) <= 49 && (s.employment === 'unemployed' || s.concerns?.includes('work'))) || s.disabledMembers?.includes('hikikomori') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 49),
-    extraLinks: [{ url: 'http://maejob.icds.jp/index.html', label: 'まえジョブ公式サイト' }],
+    extraLinks: [{ url: 'https://maejob.icds.jp/index.html', label: 'まえジョブ公式サイト' }],
   },
   {
     id: 136, title: '所得控除', cat: 'money', urgent: false, target: 'adult', grayzone: false,
