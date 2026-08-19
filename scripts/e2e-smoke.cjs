@@ -148,6 +148,8 @@ async function main() {
     const adultBlockText = body.slice(adultBlockStart);
     record('ひきこもり状態の成人家族（15〜49歳）向けになごや若者サポートステーションが出る', adultBlockText.includes('なごや若者サポートステーション'));
     record('本人向けサービスに成人家族のひきこもり情報が漏れていない（過去バグの回帰確認）', !selfBlockText.includes('なごや若者サポートステーション') && !selfBlockText.includes('まえジョブ'));
+    record('本人（50歳）に本来関係ある特定健康診査が消えていない（成人家族登録による過剰除外の回帰確認）', selfBlockText.includes('特定健康診査'));
+    record('本人向けにここらぼ（常時表示の相談窓口）が消えていない（過剰除外の回帰確認）', selfBlockText.includes('ここらぼ'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });

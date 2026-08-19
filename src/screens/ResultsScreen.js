@@ -123,9 +123,32 @@ export default function ResultsScreen({ navigation, route }) {
     const emergency = valid.filter(s => s.cat === 'emergency');
     const disaster = valid.filter(s => s.cat === 'disaster');
 
-    // 本人向け：世帯全体向けサービス（高齢者向けは下の高齢者ごとのセクションへ分離）
+    // 成人家族（高齢者以外）：1人ごとに、そのタグ・年齢だけを持つ仮プロフィールで改めてマッチングし直す
+    // （本人自身の年齢を引き継ぐと「本人が40〜74歳だから」等、家族のタグと無関係な理由でも
+    // マッチしてしまうため、年齢もその家族本人のものに差し替える。
+    // 本人向けとの重複除外に使うため、forSelfより先に計算する）
+    const perAdult = (profile.adultMembers || []).map((adult, idx) => {
+      const adultProfile = { ...profile, adultMembers: [adult], disabledMembers: adult.tags || [], age: adult.age };
+      const services = SERVICES
+        .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && s.cat !== 'child' && (s.target === 'adult' || s.target === 'both' || !s.target))
+        .filter(s => showAll || s.cond(adultProfile))
+        .filter(s => isAgeMatch(s, adultProfile))
+        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .sort(byTitle);
+      return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
+    });
+    // 「障害福祉サービスのこと」等、本人か家族かを区別しないconcernsチェック経由で
+    // 成人家族向けと同じサービスがforSelfにも重複するのを防ぐ。
+    // ただし「本人単独でも元々マッチする」（＝汎用的で本人にも関係がある）項目まで
+    // 消してしまわないよう、本人単独では一致しない項目だけを除外対象にする
+    const selfMatchedIds = new Set(matched.map(s => s.id));
+    const adultAttributedIds = new Set(
+      perAdult.flatMap(g => g.services.map(s => s.id)).filter(id => !selfMatchedIds.has(id))
+    );
+
+    // 本人向け：世帯全体向けサービス（高齢者向け・成人家族固有の項目は個別セクションへ分離）
     const forSelf = valid
-      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && (s.target === 'adult' || s.target === 'both' || !s.target))
+      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && !adultAttributedIds.has(s.id) && (s.target === 'adult' || s.target === 'both' || !s.target))
       .sort(byCat);
 
     // お子さま：1人ごとに、その子だけを持つ仮プロフィールで改めてマッチングし直す
@@ -151,18 +174,6 @@ export default function ResultsScreen({ navigation, route }) {
         .filter(s => showAll || concernMatch(s, profile.concerns))
         .sort(byTitle);
       return { key: elder.id ?? idx, idx, age: elder.age, relation: elder.relation, services };
-    });
-
-    // 成人家族（高齢者以外）：1人ごとに、そのタグだけを持つ仮プロフィールで改めてマッチングし直す
-    const perAdult = (profile.adultMembers || []).map((adult, idx) => {
-      const adultProfile = { ...profile, adultMembers: [adult], disabledMembers: adult.tags || [] };
-      const services = SERVICES
-        .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && s.cat !== 'child' && (s.target === 'adult' || s.target === 'both' || !s.target))
-        .filter(s => showAll || s.cond(adultProfile))
-        .filter(s => isAgeMatch(s, adultProfile))
-        .filter(s => showAll || concernMatch(s, profile.concerns))
-        .sort(byTitle);
-      return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
     });
 
     return { emergency, disaster, forSelf, perChild, perElderly, perAdult };
