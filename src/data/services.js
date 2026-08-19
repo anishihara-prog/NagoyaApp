@@ -942,14 +942,6 @@ export const SERVICES = [
     welnet: false, cond: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   },
   {
-    id: 118, title: '産前・産後ヘルプ事業', cat: 'child', urgent: false, target: 'adult', grayzone: false,
-    desc: '妊娠中・産後に家事・育児ヘルパーを派遣する事業。',
-    detail: '【対象年齢】子ども1歳以下\n【対象】妊娠中または産後で家事・育児に支援が必要な方\n【内容】家事支援・育児サポート\n【利用可能時間帯】8:00〜18:00\n【申込】各区役所 民生子ども課',
-    url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009013/1034073/1009017.html', contact: '各区役所 民生子ども課',
-    welnet: false, cond: (s) => s.sit?.includes('pregnant') || s.concerns?.includes('pregnant') || s.children.some(c => (c.age||c) <= 1),
-    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/kosodate/1009320/1009332/1009333.html', label: '区役所民生子ども課一覧' }],
-  },
-  {
     id: 121, title: '高等教育の修学支援新制度（大学・専門学校）（県）', cat: 'money', urgent: false, target: 'child', grayzone: false,
     desc: '愛知県内の大学・専門学校等に通う学生の機関要件確認等、県が案内する修学支援新制度の窓口。',
     detail: '【対象年齢】本人17〜25歳 / 子ども17歳以上\n【対象】愛知県内の大学・短大・高専・専門学校に在籍する学生\n【内容】対象機関の要件確認など、県の案内窓口\n【問合せ】愛知県私学振興室',
