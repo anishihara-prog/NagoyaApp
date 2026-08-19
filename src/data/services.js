@@ -996,7 +996,7 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kurashi/zeikin/1037356/1011880/1011883/1011892.html',
     contact: '財政局 税務部 市民税課 市民税担当 052-972-2352',
     welnet: false,
-    cond: (s) => s.concerns?.includes('tax') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
+    cond: (s) => s.concerns?.includes('tax') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('disabled') || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
   },
   {
     id: 137, title: '老齢基礎年金', cat: 'elderly', subcat: 'elderly_money', urgent: false, target: 'adult', grayzone: false,

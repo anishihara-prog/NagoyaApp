@@ -26,6 +26,7 @@ function buildProfile(base) {
   if ((elderlyMembers.length > 0 || parseInt(age) >= 65) && !autoConcerns.includes('nursing')) autoConcerns.push('nursing');
   if (employment === 'unemployed' && !autoConcerns.includes('work')) autoConcerns.push('work');
   if (employment === 'student' && !autoConcerns.includes('education')) autoConcerns.push('education');
+  if (employment === 'disabled_work' && !autoConcerns.includes('disability_service')) autoConcerns.push('disability_service');
   if ((income === 'low' || income === 'nontax') && !autoConcerns.includes('money')) autoConcerns.push('money');
 
   return {
@@ -36,7 +37,7 @@ function buildProfile(base) {
     disabledMembers,
     concerns: autoConcerns,
     sit: [
-      ...(disabledMembers.includes('disabled') ? ['disabled'] : []),
+      ...(disabledMembers.includes('disabled') || employment === 'disabled_work' ? ['disabled'] : []),
       ...(disabledMembers.includes('gray') ? ['gray'] : []),
       ...(disabledMembers.includes('hikikomori') ? ['hikikomori'] : []),
       ...(children.some(c => c.status === 'futoko') ? ['hikikomori'] : []),

@@ -95,6 +95,8 @@ export default function ProfileScreen({ navigation }) {
     if (employment === 'unemployed' && !autoConcerns.includes('work')) autoConcerns.push('work');
     // 学生（中高大学生）の場合は教育関連を自動追加
     if (employment === 'student' && !autoConcerns.includes('education')) autoConcerns.push('education');
+    // 障害等で未就労の場合は障害福祉関連を自動追加
+    if (employment === 'disabled_work' && !autoConcerns.includes('disability_service')) autoConcerns.push('disability_service');
     // 収入から
     if ((income === 'low' || income === 'nontax') && !autoConcerns.includes('money')) autoConcerns.push('money');
 
@@ -107,7 +109,7 @@ export default function ProfileScreen({ navigation }) {
         disabledMembers,
         concerns: autoConcerns,
         sit: [
-          ...(disabledMembers.includes('disabled') ? ['disabled'] : []),
+          ...(disabledMembers.includes('disabled') || employment === 'disabled_work' ? ['disabled'] : []),
           ...(disabledMembers.includes('gray') ? ['gray'] : []),
           ...(disabledMembers.includes('hikikomori') ? ['hikikomori'] : []),
           ...(children.some(c => c.status === 'futoko') ? ['hikikomori'] : []),

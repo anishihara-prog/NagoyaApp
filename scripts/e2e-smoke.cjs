@@ -251,6 +251,23 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5e. 就労状況「障害等で未就労」を選ぶと障害福祉関連サービスが出ること（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('35');
+    await page.getByText('障害等で未就労', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('「障害等で未就労」を選ぶと障害者向け交通料金等の軽減が出る', body.includes('障害者向け交通料金等の軽減'));
+    record('「障害等で未就労」を選ぶと障害者基幹相談支援センターが出る', body.includes('障害者基幹相談支援センター'));
+    record('「障害等で未就労」を選ぶと所得控除が出る', body.includes('所得控除'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
