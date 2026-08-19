@@ -806,7 +806,7 @@ export const SERVICES = [
     detail: '【対象年齢】高齢者同居\n【粗大ごみ収集】事前申込制（電話またはインターネット）、1品目250円〜\n【申込みの締切り】収集日の7日前（前の週の同一曜日）\n【Web申込】名古屋市ごみ収集受付センターから24時間申込可\n【ごみ分別】もえるごみ・もえないごみ・資源・粗大ごみの4種類\n【高齢者・障害者向け】なごや収集（戸別収集支援）あり',
     url: 'https://www.city.nagoya.jp/kurashi/gomi/1012183/index.html', contact: 'フリーダイヤル 0120-758-530／携帯電話・IP電話は052-950-2581',
     hours: '月〜金曜日（年末年始を除く） 9:00〜17:00',
-    welnet: false, cond: (s) => s.concerns?.includes('waste') || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.elderlyMembers?.length > 0 || s.disabledMembers?.length > 0,
+    welnet: false, cond: (s) => s.concerns?.includes('waste') || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kurashi/gomi/1012183/1035058/1012184/1046468/index.html', label: '粗大ごみを申し込む場合' }],
   },
   {
@@ -1004,7 +1004,7 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kurashi/zeikin/1037356/1011880/1011883/1011892.html',
     contact: '財政局 税務部 市民税課 市民税担当 052-972-2352',
     welnet: false,
-    cond: (s) => s.concerns?.includes('tax') || s.disabledMembers?.length > 0 || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
+    cond: (s) => s.concerns?.includes('tax') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
   },
   {
     id: 137, title: '老齢基礎年金', cat: 'elderly', subcat: 'elderly_money', urgent: false, target: 'adult', grayzone: false,
@@ -1234,7 +1234,7 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016662/1016663.html',
     contact: '健康福祉局 障害福祉部 障害者支援課 障害者の地域生活支援担当 052-972-2596',
     welnet: false,
-    cond: (s) => s.disabledMembers?.length > 0 || s.concerns?.includes('disability_service') || s.concerns?.includes('child_disability'),
+    cond: (s) => s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.concerns?.includes('disability_service') || s.concerns?.includes('child_disability'),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016662/1016664.html', label: '障害者基幹相談支援センター一覧' }],
   },
   {

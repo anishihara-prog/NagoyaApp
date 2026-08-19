@@ -177,6 +177,8 @@ async function main() {
     const adultBlockText = adultBlockStart >= 0 ? body.slice(adultBlockStart) : '';
 
     record('障害タグありの本人には障害者向け交通料金等の軽減が出る', selfBlockText.includes('障害者向け交通料金等の軽減'));
+    record('障害タグありの本人には所得控除が出る', selfBlockText.includes('所得控除'));
+    record('障害タグありの本人には障害者基幹相談支援センターが出る', selfBlockText.includes('障害者基幹相談支援センター'));
     record('障害タグなしの成人家族には障害者向け交通料金等の軽減が出ない（本人のタグが誤って波及しない）', !adultBlockText.includes('障害者向け交通料金等の軽減'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
@@ -201,6 +203,9 @@ async function main() {
     const adultBlockStart = body.indexOf('成人の子（28歳）向けサービス');
     const adultBlockText = adultBlockStart >= 0 ? body.slice(adultBlockStart) : '';
     record('「ひきこもり」タグのみの成人家族には障害者向け交通料金等の軽減が出ない（手帳系タグと無関係な波及の回帰確認）', !adultBlockText.includes('障害者向け交通料金等の軽減'));
+    record('「ひきこもり」タグのみの成人家族には粗大ごみ・家庭ごみの収集案内が出ない（手帳系タグと無関係な波及の回帰確認）', !adultBlockText.includes('粗大ごみ・家庭ごみの収集・分別案内'));
+    record('「ひきこもり」タグのみの成人家族には所得控除が出ない（手帳系タグと無関係な波及の回帰確認）', !adultBlockText.includes('所得控除'));
+    record('「ひきこもり」タグのみの成人家族には障害者基幹相談支援センターが出ない（手帳系タグと無関係な波及の回帰確認）', !adultBlockText.includes('障害者基幹相談支援センター'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });

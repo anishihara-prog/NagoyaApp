@@ -87,7 +87,7 @@ export default function ResultsScreen({ navigation, route }) {
       housing_concern:    ['housing', 'welfare'],
       health:             ['health', 'emergency', 'work'],
       mental_health:      ['mental', 'welfare'],
-      disability_service: ['welfare', 'work'],
+      disability_service: ['welfare', 'work', 'money'],
       hikikomori_concern: ['welfare', 'health', 'work'],
       dv:                 ['welfare', 'housing'],
       disaster:           ['emergency', 'disaster'],
