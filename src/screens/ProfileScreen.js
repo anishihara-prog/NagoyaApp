@@ -72,6 +72,14 @@ export default function ProfileScreen({ navigation }) {
   const togDisabled = (v) => setDisabledMembers(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
   const togConcern = (v) => setConcerns(p => p.includes(v) ? p.filter(x => x !== v) : [...p, v]);
 
+  const clearAll = () => {
+    setAge(''); setGender(''); setMarital(''); setLiving(''); setEmployment(''); setHousing(''); setIncome(''); setDistrict('');
+    setChildren([]); setChildIdx(0);
+    setElderlyMembers([]); setElderlyIdx(0);
+    setAdultMembers([]); setAdultIdx(0);
+    setDisabledMembers([]); setConcerns([]);
+  };
+
   const doSearch = () => {
     // 子どもの状況から自動的にconcernsを補完
     const autoConcerns = [...concerns];
@@ -118,9 +126,15 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView showsVerticalScrollIndicator={true}>
 
         <View style={styles.hero}>
-          <View style={styles.cityBadge}>
-            <Ionicons name="business-outline" size={12} color={colors.primary} />
-            <Text style={styles.cityBadgeTxt}>名古屋市 公式サービス検索</Text>
+          <View style={styles.heroTopRow}>
+            <View style={styles.cityBadge}>
+              <Ionicons name="business-outline" size={12} color={colors.primary} />
+              <Text style={styles.cityBadgeTxt}>名古屋市 公式サービス検索</Text>
+            </View>
+            <TouchableOpacity style={styles.clearBtn} onPress={clearAll} activeOpacity={0.7}>
+              <Ionicons name="refresh-outline" size={13} color={colors.textSecondary} />
+              <Text style={styles.clearBtnTxt}>入力をクリア</Text>
+            </TouchableOpacity>
           </View>
           <Text style={styles.heroTitle}>あなたの世帯に合った{'\n'}サービスを探す</Text>
           <Text style={styles.heroSub}>詳しく入力するほど、あなたに合ったサービスが絞り込まれます。</Text>
@@ -377,7 +391,10 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
   hero: { padding: spacing.lg, paddingBottom: spacing.md },
-  cityBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.primaryBg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 10 },
+  heroTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  cityBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.primaryBg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4 },
+  clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: colors.borderMed, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 5 },
+  clearBtnTxt: { fontSize: 12, color: colors.textSecondary, fontWeight: font.medium },
   cityBadgeTxt: { fontSize: 11, fontWeight: font.medium, color: colors.primary },
   heroTitle: { fontSize: 20, fontWeight: font.semibold, color: colors.textPrimary, lineHeight: 28, marginBottom: 6 },
   heroSub: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
