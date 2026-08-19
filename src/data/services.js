@@ -210,7 +210,7 @@ export const SERVICES = [
     detail: '【運営】市の委託を受けた法人が運営\n【対象】障害のある方または障害が疑われる方（手帳不要）\n【支援内容】就労相談・職場定着支援・日常生活相談を一体的に提供\n【手帳がなくても相談OK】診断前・グレーゾーンの方も受け付けています',
     url: 'https://www.city.nagoya.jp/jigyou/sangyou/1026356/1035103/1026446/1026447.html', contact: 'ウェルジョブなごや（052-684-9007）',
     hours: '受付時間 月〜金（祝日・年末年始は除く）、9:00〜17:00',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
+    welnet: false, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
     extraLinks: [{ url: 'https://weljob-nagoya.com/', label: 'ウェルジョブなごや公式サイト' }],
   },
   {
@@ -674,7 +674,7 @@ export const SERVICES = [
     detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【いきいき支援センター】介護・認知症・生活全般の相談（各区に設置）\n【成年後見あんしんセンター】成年後見制度の相談\n【高齢者虐待相談センター】虐待・権利侵害の相談\n【障害者・高齢者権利擁護センター（北部・南部）】権利擁護相談\n【費用】すべて相談無料',
     url: 'https://www.city.nagoya.jp/kurashi/shouhi/1016390/1016399.html', contact: 'いきいき支援センター（各区）/ 成年後見 052-856-3939 / 権利擁護北部 052-919-7584 / 南部 052-678-3030',
     hours: '月〜金（祝日除く）9:00〜17:00',
-    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0 || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.concerns?.includes('nursing'),
+    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0 || s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.concerns?.includes('nursing'),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/kaigo/yobou/toiawase/', label: 'いきいき支援センター一覧' }],
   },
   {
