@@ -161,3 +161,41 @@ jobs:
       - name: 正常終了ログ
         if: steps.links.outputs.broken == 'false' && steps.content.outputs.changed == 'false' && steps.categories.outputs.changed == 'false'
         run: echo "リンク切れ・内容変更・カテゴリタブ変更ともに検知なし。"
+
+      # ── 7. 実行結果をメールで通知 ───────────────────
+      #      自動修正はせず、検知結果の通知のみ行う（誤った自動修正のリスクを避けるため）
+      - name: 日付・判定結果を環境変数に設定
+        if: always()
+        run: |
+          echo "DATE_JST=$(TZ=Asia/Tokyo date +'%Y-%m-%d')" >> "$GITHUB_ENV"
+          if [ "${{ steps.links.outputs.broken }}" == "true" ] || [ "${{ steps.content.outputs.changed }}" == "true" ] || [ "${{ steps.categories.outputs.changed }}" == "true" ]; then
+            echo "MAIL_STATUS=⚠️ 変更・問題を検知しました" >> "$GITHUB_ENV"
+          else
+            echo "MAIL_STATUS=✅ 問題なし" >> "$GITHUB_ENV"
+          fi
+
+      - name: 結果をメールで通知
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "[名古屋市HPチェック] ${{ env.DATE_JST }} ${{ env.MAIL_STATUS }}"
+          to: a.nishihara@wappa-no-kai.jp
+          from: NagoyaApp HPチェック <${{ secrets.GMAIL_USERNAME }}>
+          body: |
+            ${{ env.MAIL_STATUS }}
+
+            ・リンク切れチェック: ${{ steps.links.outputs.broken == 'true' && '要確認あり' || '問題なし' }}
+            ・ページ内容変更チェック: ${{ steps.content.outputs.changed == 'true' && '変更あり' || '変更なし' }}
+            ・トップページ主要タブ項目チェック: ${{ steps.categories.outputs.changed == 'true' && '変更あり' || '変更なし' }}
+
+            自動修正は行っていません。変更・問題が検知された場合は、内容を確認のうえ手動で対応してください。
+
+            詳細（Issue一覧）: https://github.com/${{ github.repository }}/issues
+            実行ログ: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            最新レポート（Excel）: https://github.com/${{ github.repository }}/raw/master/reports/latest-report.xlsx
+
+            ── GitHub Actions 自動送信 ──

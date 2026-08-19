@@ -21,6 +21,10 @@ const SKIP_PATTERNS = [
   /api\.anthropic\.com/,
   /apps\.apple\.com/,
   /play\.google\.com/,
+  // pref.aichi.jp は Incapsula（bot対策WAF）が自動アクセスを一律403/リダイレクトループで
+  // ブロックするため、実際のリンク切れと区別できない。誤検知でのissue乱発を防ぐため対象外にする
+  // （2026-08時点で確認済み。手動での定期確認に頼る）
+  /pref\.aichi\.jp/,
 ];
 
 // 名古屋市トップページの主要タブ（この配下の項目の追加/変更/削除を検知する）
