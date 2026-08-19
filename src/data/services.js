@@ -814,7 +814,7 @@ export const SERVICES = [
     desc: '障害者手帳所持者向けに市バス・地下鉄・タクシー等の交通料金を軽減する制度。',
     detail: '【障害者割引】身体・療育・精神手帳で市バス・地下鉄半額、タクシー割引\n【福祉タクシー券】重度障害者向けにタクシー券を交付（年間24枚）',
     url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016573/index.html', contact: '各区役所福祉課障害福祉課',
-    welnet: false, cond: (s) => s.concerns?.includes('transport') || s.disabledMembers?.length > 0 || s.sit?.includes('disabled'),
+    welnet: false, cond: (s) => s.concerns?.includes('transport') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('disabled'),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/soudan/fukushikakari.html', label: '各区役所福祉課障害福祉担当一覧' }],
   },
   {

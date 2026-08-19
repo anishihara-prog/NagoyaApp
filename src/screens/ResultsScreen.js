@@ -130,6 +130,13 @@ export default function ResultsScreen({ navigation, route }) {
     // 本人向けとの重複除外に使うため、forSelfより先に計算する）
     const perAdult = (profile.adultMembers || []).map((adult, idx) => {
       const tags = adult.tags || [];
+      // concerns（困りごとチェック）も世帯共通のため、そのまま引き継ぐと「交通・移動のこと」
+      // 等の本人由来の困りごとがタグなしの家族にも波及してしまう。その家族自身のタグから
+      // 導ける範囲だけに絞って再構築する
+      const adultConcerns = [
+        ...(tags.includes('hikikomori') ? ['hikikomori_concern'] : []),
+        ...(['disabled', 'intellectual', 'mental', 'gray'].some(t => tags.includes(t)) ? ['disability_service'] : []),
+      ];
       const adultProfile = {
         ...profile,
         adultMembers: [adult],
@@ -140,12 +147,13 @@ export default function ResultsScreen({ navigation, route }) {
           ...(tags.includes('gray') ? ['gray'] : []),
           ...(tags.includes('hikikomori') ? ['hikikomori'] : []),
         ],
+        concerns: adultConcerns,
       };
       const services = SERVICES
         .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && s.cat !== 'child' && (s.target === 'adult' || s.target === 'both' || !s.target))
         .filter(s => showAll || s.cond(adultProfile))
         .filter(s => isAgeMatch(s, adultProfile))
-        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .filter(s => showAll || concernMatch(s, adultConcerns))
         .sort(byTitle);
       return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
     });
