@@ -30,8 +30,8 @@ function idsFor(baseProfileFields) {
   const profile = buildProfile(baseProfileFields);
   return SERVICES
     .filter(s => { try { return !!s.cond(profile); } catch { return false; } })
-    .map(s => s.id)
-    .join(',');
+    .map(s => s.title)
+    .join('\n');
 }
 
 function ageHeaderRows() {
