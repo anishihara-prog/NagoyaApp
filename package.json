@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "node scripts/test-matching.mjs",
-    "test:e2e": "node scripts/e2e-smoke.cjs"
+    "test:e2e": "node scripts/e2e-smoke.cjs",
+    "audit": "node scripts/audit-cond-patterns.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
