@@ -49,7 +49,7 @@ export default function DetailScreen({ navigation, route }) {
         <Text style={styles.headerTitle} numberOfLines={1}>サービス詳細</Text>
       </View>
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={true}>
         <View style={styles.hero}>
           <View style={styles.tagRow}>
             <View style={[styles.catTag, { backgroundColor: catColor.bg }]}>

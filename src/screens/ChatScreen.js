@@ -173,7 +173,7 @@ export default function ChatScreen({ navigation, route }) {
           ref={scrollRef}
           style={styles.messages}
           contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
         >
           {messages.map((msg) => (
             <View key={msg.id} style={[styles.msgWrap, msg.role === 'user' ? styles.msgWrapUser : styles.msgWrapBot]}>
