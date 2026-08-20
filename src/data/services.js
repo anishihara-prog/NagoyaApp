@@ -101,6 +101,7 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016496/1016502.html', contact: '各区いきいき支援センター',
     hours: '月〜金（祝日、年末年始を除く） / 9:00〜17:00',
     welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0,
+    extraLinks: [{ url: 'http://www.kaigo-wel.city.nagoya.jp/view/kaigo/yobou/toiawase/', label: 'いきいき支援センター一覧（NAGOYAかいごネット）' }],
   },
   {
     id: 13, title: '敬老パス（市バス・地下鉄乗車証）', cat: 'elderly', subcat: 'elderly_rights', urgent: false, target: 'adult', grayzone: false,
