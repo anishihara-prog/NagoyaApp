@@ -34,22 +34,14 @@ function idsFor(baseProfileFields) {
     .join('\n');
 }
 
-function ageHeaderRows() {
-  const thresholdRow = ['', '', ''];
-  const ageRow = ['', '', ''];
-  for (const { age, thresholds: srcThresholds } of ageCols) {
-    thresholdRow.push(`閾値${[...srcThresholds].join('/')}近傍`);
-    ageRow.push(`${age}歳`);
-  }
-  return [thresholdRow, ageRow];
+function ageLabels() {
+  return ageCols.map(({ age }) => `${age}歳`);
 }
 
 // ── シート1: 本人：年齢×ボタン ──────────────────────────
 function buildSelfSheet() {
   const rows = [];
-  const [thresholdRow, ageRow] = ageHeaderRows();
-  thresholdRow[0] = 'セクション'; thresholdRow[1] = '選択肢（日本語）'; thresholdRow[2] = '内部値';
-  rows.push(thresholdRow, ageRow);
+  rows.push(['セクション', '選択肢（日本語）', '内部値', ...ageLabels()]);
 
   const addRow = (section, label, value, baseFields) => {
     const row = [section, label, value];
@@ -75,9 +67,7 @@ function buildSelfSheet() {
 // ── シート2: 家族登録パターン ────────────────────────────
 function buildFamilySheet() {
   const rows = [];
-  const [thresholdRow, ageRow] = ageHeaderRows();
-  thresholdRow[0] = '対象'; thresholdRow[1] = '項目'; thresholdRow[2] = '選択肢（日本語）';
-  rows.push(thresholdRow, ['', '', '内部値', ...ageRow.slice(3)]);
+  rows.push(['対象', '項目', '選択肢（日本語）', '内部値', ...ageLabels()]);
 
   const addRow = (target, item, label, value, baseFieldsFn) => {
     const row = [target, item, label, value];
