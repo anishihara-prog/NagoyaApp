@@ -193,7 +193,7 @@ export const SERVICES = [
     desc: '障害の種類・程度に応じた手帳を取得し、各種福祉サービスを利用できます。',
     detail: '【種類】身体障害者手帳 / 療育手帳 / 精神障害者保健福祉手帳\n【必要書類（身体障害者手帳・新規）】手帳交付申請書、指定医師診断書、写真（縦4cm×横3cm）、マイナンバー確認書類\n【必要書類（療育手帳・新規）】手帳交付申請書、写真（縦4cm×横3cm）、マイナンバー確認書類\n【必要書類（精神障害者保健福祉手帳・新規）】申請書、医師の診断書または障害年金証書等の写し（いずれか一方）、マイナンバー確認書類（申請時に写真は不要。写真は手帳交付時のみ必要）\n【取得後のメリット】税の控除、公共交通機関割引、各種福祉サービス利用など',
     url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/tetyou/', contact: '各区役所福祉課（社会福祉事務所）支所区民福祉課',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental'),
+    welnet: false, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.sit?.includes('disabled'),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/soudan/fukushikakari.html', label: '各区役所福祉課（社会福祉事務所）支所区民福祉課' }],
   },
   {
@@ -201,7 +201,7 @@ export const SERVICES = [
     desc: '在宅での介護支援・就労継続支援・グループホームなど多様なサービス。',
     detail: '【主なサービス】居宅介護 / 就労継続支援（A型・B型）/ 就労移行支援 / グループホーム / 短期入所\n【利用手続き】①区役所福祉課に相談 → ②支給決定 → ③事業所と契約\n【自己負担】原則1割（所得により無料の場合も）\n【事業所を探す】ウェルネット名古屋で検索できます',
     url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/fukushi_service.html', urlLabel: 'ウェルネットなごやで確認する', contact: '各区役所 福祉課',
-    welnet: true, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray'),
+    welnet: true, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.sit?.includes('disabled'),
     extraLinks: [{ url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/soudan/fukushikakari.html', label: '支所区民福祉課一覧' }],
   },
   {
@@ -1206,7 +1206,7 @@ export const SERVICES = [
     url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016553/1016554.html',
     contact: '健康福祉局 生活福祉部 医療福祉課 福祉医療担当 052-972-2574',
     welnet: false,
-    cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental'),
+    cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.sit?.includes('disabled'),
   },
   {
     id: 159, title: '自立支援医療', cat: 'health', urgent: false, target: 'both', grayzone: true,
