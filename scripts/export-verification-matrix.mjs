@@ -38,6 +38,33 @@ function ageLabels() {
   return ageCols.map(({ age }) => `${age}歳`);
 }
 
+// 年齢の列方向に見て、隣接するセルの内容が同じなら1つに結合し、
+// セル先頭に「【N〜M歳】」という範囲ラベルを付ける。結合したセルはExcelの
+// セル結合（!merges）で見た目上も1つのセルにする。
+// firstAgeCol: 年齢列が始まる列番号（0始まり）。ヘッダー行（行0）はそのまま残す。
+function applyAgeRangeMerging(rows, firstAgeCol) {
+  const merges = [];
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    let c = firstAgeCol;
+    while (c < row.length) {
+      let end = c;
+      while (end + 1 < row.length && row[end + 1] === row[c]) end++;
+      if (end > c) {
+        if (row[c]) {
+          const startAge = ageCols[c - firstAgeCol].age;
+          const endAge = ageCols[end - firstAgeCol].age;
+          row[c] = `【${startAge}〜${endAge}歳】\n${row[c]}`;
+        }
+        for (let cc = c + 1; cc <= end; cc++) row[cc] = '';
+        merges.push({ s: { r, c }, e: { r, c: end } });
+      }
+      c = end + 1;
+    }
+  }
+  return merges;
+}
+
 // ── シート1: 本人：年齢×ボタン ──────────────────────────
 function buildSelfSheet() {
   const rows = [];
@@ -61,7 +88,8 @@ function buildSelfSheet() {
   for (const v of DISABLED_TAGS) addRow('障害・困難（本人）', DISABLED_LABEL[v], v, { disabledMembers: [v] });
   for (const v of CONCERN_TAGS) addRow('困りごと', CONCERN_LABEL[v], v, { concerns: [v] });
 
-  return rows;
+  const merges = applyAgeRangeMerging(rows, 3);
+  return { rows, merges };
 }
 
 // ── シート2: 家族登録パターン ────────────────────────────
@@ -101,7 +129,8 @@ function buildFamilySheet() {
     }));
   }
 
-  return rows;
+  const merges = applyAgeRangeMerging(rows, 4);
+  return { rows, merges };
 }
 
 // ── シート3: 凡例（サービスID一覧） ──────────────────────
@@ -131,20 +160,30 @@ function buildNotesSheet() {
     ['・「介護保険サービスの利用状況」は入力画面にはありますが、現状どのマッチ条件からも'],
     ['　参照されていないため、この一覧には含めていません。'],
     [''],
-    ['・セルの数字はサービスIDです。「凡例（サービスID一覧）」シートでタイトルを確認してください。'],
+    ['・セルには一致したサービスの項目名を1行1件で表示しています。「凡例（サービスID一覧）」シートはカテゴリ・対象の参照用です。'],
     ['・空欄のセルは「該当するサービスがない」ことを意味します。'],
+    ['・隣り合う年齢の結果が同じ場合は列を結合し、セルの先頭に「【N〜M歳】」という範囲を表示しています。'],
   ];
+}
+
+function buildSheet(sheetData) {
+  const { rows, merges } = sheetData;
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  if (merges?.length) ws['!merges'] = merges;
+  return ws;
 }
 
 function run() {
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(buildSelfSheet()), '本人：年齢×ボタン');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(buildFamilySheet()), '家族登録パターン');
+  const selfSheet = buildSelfSheet();
+  const familySheet = buildFamilySheet();
+  XLSX.utils.book_append_sheet(wb, buildSheet(selfSheet), '本人：年齢×ボタン');
+  XLSX.utils.book_append_sheet(wb, buildSheet(familySheet), '家族登録パターン');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(buildLegendSheet()), '凡例（サービスID一覧）');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(buildNotesSheet()), '注意点');
   XLSX.writeFile(wb, OUT_FILE);
   console.log(`✅ 出力しました: ${OUT_FILE}`);
-  console.log(`   年齢列数: ${ageCols.length} / 本人シート行数: ${buildSelfSheet().length} / 家族シート行数: ${buildFamilySheet().length} / 凡例行数: ${SERVICES.length}`);
+  console.log(`   年齢列数: ${ageCols.length} / 本人シート行数: ${selfSheet.rows.length} / 家族シート行数: ${familySheet.rows.length} / 凡例行数: ${SERVICES.length}`);
 }
 
 run();
