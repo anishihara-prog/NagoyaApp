@@ -6,8 +6,9 @@
 // セットした空プロフィールを評価する（buildProfile()は通すのでdoSearch()の自動
 // concerns/sit導出は再現される）。「このボタンを押すと何が出るか」を素直に表す。
 //
-// 出力: 確認用_年齢×ボタン別マッチ結果一覧.xlsx
-// 使い方: node scripts/export-verification-matrix.mjs [出力ファイル名]
+// 出力: 確認用_年齢×ボタン別マッチ結果一覧.xlsx（項目名版）
+//       確認用_年齢×ボタン別マッチ結果一覧（ID版）.xlsx（--ids指定時、サービスID版）
+// 使い方: node scripts/export-verification-matrix.mjs [出力ファイル名] [--ids]
 
 import { SERVICES } from '../src/data/services.js';
 import XLSX from 'xlsx';
@@ -21,7 +22,9 @@ import {
   ELDERLY_CARE_LEVEL_LABEL, ADULT_RELATION_LABEL, CAT_LABEL, TARGET_LABEL,
 } from './lib/profile-utils.mjs';
 
-const OUT_FILE = process.argv[2] || '確認用_年齢×ボタン別マッチ結果一覧.xlsx';
+const USE_IDS = process.argv.includes('--ids');
+const fileArg = process.argv.slice(2).find(a => a !== '--ids');
+const OUT_FILE = fileArg || (USE_IDS ? '確認用_年齢×ボタン別マッチ結果一覧（ID版）.xlsx' : '確認用_年齢×ボタン別マッチ結果一覧.xlsx');
 
 const thresholds = extractAgeThresholds(SERVICES);
 const ageCols = computeBoundaryAges(thresholds); // [{ age, thresholds: Set }, ...]
@@ -30,8 +33,8 @@ function idsFor(baseProfileFields) {
   const profile = buildProfile(baseProfileFields);
   return SERVICES
     .filter(s => { try { return !!s.cond(profile); } catch { return false; } })
-    .map(s => s.title)
-    .join('\n');
+    .map(s => USE_IDS ? s.id : s.title)
+    .join(USE_IDS ? ',' : '\n');
 }
 
 function ageLabels() {
@@ -160,7 +163,9 @@ function buildNotesSheet() {
     ['・「介護保険サービスの利用状況」は入力画面にはありますが、現状どのマッチ条件からも'],
     ['　参照されていないため、この一覧には含めていません。'],
     [''],
-    ['・セルには一致したサービスの項目名を1行1件で表示しています。「凡例（サービスID一覧）」シートはカテゴリ・対象の参照用です。'],
+    [USE_IDS
+      ? '・セルには一致したサービスのIDをカンマ区切りで表示しています。「凡例（サービスID一覧）」シートでタイトルを確認してください。'
+      : '・セルには一致したサービスの項目名を1行1件で表示しています。「凡例（サービスID一覧）」シートはカテゴリ・対象の参照用です。'],
     ['・空欄のセルは「該当するサービスがない」ことを意味します。'],
     ['・隣り合う年齢の結果が同じ場合は列を結合し、セルの先頭に「【N〜M歳】」という範囲を表示しています。'],
   ];
