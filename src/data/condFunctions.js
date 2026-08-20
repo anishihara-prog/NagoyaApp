@@ -24,8 +24,8 @@ export const COND_FUNCTIONS = {
   20: (s) => s.income === 'low' || s.income === 'nontax' || s.concerns?.includes('housing_concern'),
   21: (s) => s.employment === 'unemployed' || s.concerns?.includes('work'),
   22: (s) => s.employment === 'unemployed' || s.concerns?.includes('work'),
-  23: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental'),
-  24: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray'),
+  23: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.sit?.includes('disabled'),
+  24: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.sit?.includes('disabled'),
   25: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
   26: (s) => s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
   27: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
@@ -106,5 +106,6 @@ export const COND_FUNCTIONS = {
   135: (s) => (parseInt(s.age) >= 15 && parseInt(s.age) <= 49 && (s.employment === 'unemployed' || s.concerns?.includes('work'))) || s.disabledMembers?.includes('hikikomori') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 49),
   136: (s) => s.concerns?.includes('tax') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('disabled') || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
   146: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.children?.some(c => c.status === 'futoko') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 39) || (parseInt(s.age) >= 15 && parseInt(s.age) <= 39 && (s.employment === 'unemployed' || s.concerns?.includes('work'))),
+  158: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.sit?.includes('disabled'),
   160: (s) => s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.concerns?.includes('disability_service') || s.concerns?.includes('child_disability'),
 };
