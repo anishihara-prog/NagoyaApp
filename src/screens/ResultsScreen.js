@@ -157,22 +157,8 @@ export default function ResultsScreen({ navigation, route }) {
         .sort(byTitle);
       return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
     });
-    // 「障害福祉サービスのこと」等、本人か家族かを区別しないconcernsチェック経由で
-    // 成人家族向けと同じサービスがforSelfにも重複するのを防ぐ。
-    // ただし「本人単独でも元々マッチする」（＝汎用的で本人にも関係がある）項目まで
-    // 消してしまわないよう、本人単独では一致しない項目だけを除外対象にする
-    const selfMatchedIds = new Set(matched.map(s => s.id));
-    const adultAttributedIds = new Set(
-      perAdult.flatMap(g => g.services.map(s => s.id)).filter(id => !selfMatchedIds.has(id))
-    );
-
-    // 本人向け：世帯全体向けサービス（高齢者向け・成人家族固有の項目は個別セクションへ分離）
-    const forSelf = valid
-      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && !adultAttributedIds.has(s.id) && (s.target === 'adult' || s.target === 'both' || !s.target))
-      .sort(byCat);
-
     // お子さま：1人ごとに、その子だけを持つ仮プロフィールで改めてマッチングし直す
-    // （きょうだいの年齢で誤って一致してしまうのを防ぐ）
+    // （きょうだいの年齢で誤って一致してしまうのを防ぐ。forSelfとの重複除外に使うため、forSelfより先に計算する）
     const perChild = (profile.children || []).map((child, idx) => {
       const childProfile = { ...profile, children: [child] };
       const services = SERVICES
@@ -183,6 +169,32 @@ export default function ResultsScreen({ navigation, route }) {
         .sort(byCat);
       return { key: child.id ?? idx, idx, age: child.age, status: child.status, services };
     });
+
+    // 「障害福祉サービスのこと」等、本人か家族かを区別しないconcernsチェック経由で
+    // 成人家族向けと同じサービスがforSelfにも重複するのを防ぐ。
+    // ただし「本人単独でも元々マッチする」（＝汎用的で本人にも関係がある）項目まで
+    // 消してしまわないよう、本人単独では一致しない項目だけを除外対象にする
+    const selfMatchedIds = new Set(matched.map(s => s.id));
+    const adultAttributedIds = new Set(
+      perAdult.flatMap(g => g.services.map(s => s.id)).filter(id => !selfMatchedIds.has(id))
+    );
+    // target:'child'の項目（高校生等就学支援金など）は本来「子どもを登録した世帯」向けだが、
+    // 本人自身が15〜18歳等でcondの本人年齢条件を満たす場合（本人が高校生本人としてアプリを使うケース）
+    // は、登録した子ども側で個別に一致しない限り、本人向けとして表示する。
+    // ここでの「本人単独での一致」はchildrenを含めたselfMatchedIdsで判定すると、
+    // 登録した子どもの年齢だけで一致したケース（本人自身は無関係）まで「本人も一致した」と
+    // 誤判定してしまうため、children を除いたプロフィールで改めて判定する。
+    const selfWithoutChildrenIds = new Set(
+      SERVICES.filter(s => { try { return !!s.cond({ ...selfProfile, children: [] }); } catch { return false; } }).map(s => s.id)
+    );
+    const childAttributedIds = new Set(
+      perChild.flatMap(g => g.services.map(s => s.id)).filter(id => !selfWithoutChildrenIds.has(id))
+    );
+
+    // 本人向け：世帯全体向けサービス（高齢者向け・成人家族固有・子ども固有の項目は個別セクションへ分離）
+    const forSelf = valid
+      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && !adultAttributedIds.has(s.id) && !childAttributedIds.has(s.id) && (s.target === 'adult' || s.target === 'both' || !s.target || s.target === 'child'))
+      .sort(byCat);
 
     // 高齢者：1人ごとに、その方だけを持つ仮プロフィールで改めてマッチングし直す
     const perElderly = (profile.elderlyMembers || []).map((elder, idx) => {

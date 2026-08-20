@@ -329,6 +329,43 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5h. 本人が16歳（子ども未登録）で、target:'child'だが本人年齢条件も持つ項目
+  //        （高校生等就学支援金など）が本人向けサービスに出ること（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('16');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('本人16歳（子ども未登録）で本人向けサービスの見出しが出る', body.includes('本人向けサービス'));
+    record('本人16歳（子ども未登録）で高等学校等就学支援金（国）が本人向けに出る', body.includes('高等学校等就学支援金（国）'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  // ── 5i. 本人40歳＋子ども16歳登録で、高校生等就学支援金が本人向けと子ども向けに二重表示されないこと（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('40');
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('16');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    const selfBlockStart = body.indexOf('本人向けサービス');
+    const childBlockStart = body.indexOf('向けサービス', selfBlockStart + 5);
+    const selfBlockText = body.slice(selfBlockStart, childBlockStart > selfBlockStart ? childBlockStart : body.length);
+    record('本人40歳＋子ども16歳登録で、高校生等就学支援金が本人向けに漏れていない（子ども向けのみに表示）', !selfBlockText.includes('高等学校等就学支援金'));
+    record('本人40歳＋子ども16歳登録で、子ども向けサービスに高校生等就学支援金が出る', body.includes('高等学校等就学支援金（国）'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
