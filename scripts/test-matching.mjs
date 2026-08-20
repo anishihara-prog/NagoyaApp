@@ -8,47 +8,11 @@
 // をコンソールに出力する。CI等でのpass/fail判定は行わない（目視レビュー用）。
 
 import { SERVICES } from '../src/data/services.js';
-
-// ProfileScreen.js の doSearch() と同じ変換（concers自動補完・sit配列生成）を再現
-function buildProfile(base) {
-  const {
-    age = '', gender = '', marital = '', living = '', employment = '', housing = '',
-    income = '', district = '', children = [], elderlyMembers = [], adultMembers = [], disabledMembers = [], concerns = [],
-  } = base;
-
-  const autoConcerns = [...concerns];
-  children.forEach(c => {
-    if (c.status === 'futoko' && !autoConcerns.includes('hikikomori_concern')) autoConcerns.push('hikikomori_concern');
-    if (c.status === 'futoko' && !autoConcerns.includes('education')) autoConcerns.push('education');
-    if (c.status === 'special' && !autoConcerns.includes('child_disability')) autoConcerns.push('child_disability');
-    if (['nursery', 'elementary', 'junior', 'high'].includes(c.status) && !autoConcerns.includes('childcare')) autoConcerns.push('childcare');
-  });
-  if ((elderlyMembers.length > 0 || parseInt(age) >= 65) && !autoConcerns.includes('nursing')) autoConcerns.push('nursing');
-  if (employment === 'unemployed' && !autoConcerns.includes('work')) autoConcerns.push('work');
-  if (employment === 'student' && !autoConcerns.includes('education')) autoConcerns.push('education');
-  if (employment === 'disabled_work' && !autoConcerns.includes('disability_service')) autoConcerns.push('disability_service');
-  if ((income === 'low' || income === 'nontax') && !autoConcerns.includes('money')) autoConcerns.push('money');
-
-  return {
-    age, gender, marital, living, employment, housing, income, district,
-    children: children.map(c => ({ age: parseInt(c.age) || 0, status: c.status })),
-    elderlyMembers,
-    adultMembers,
-    disabledMembers,
-    concerns: autoConcerns,
-    sit: [
-      ...(disabledMembers.includes('disabled') || employment === 'disabled_work' ? ['disabled'] : []),
-      ...(disabledMembers.includes('gray') ? ['gray'] : []),
-      ...(disabledMembers.includes('hikikomori') ? ['hikikomori'] : []),
-      ...(children.some(c => c.status === 'futoko') ? ['hikikomori'] : []),
-      ...(autoConcerns.includes('nursing') ? ['nursing'] : []),
-      ...(autoConcerns.includes('pregnant') ? ['pregnant'] : []),
-      ...(employment === 'unemployed' ? ['unemployed'] : []),
-      ...(income === 'low' || income === 'nontax' ? ['lowincome'] : []),
-      ...(elderlyMembers.length > 0 || parseInt(age) >= 65 ? ['elderly'] : []),
-    ],
-  };
-}
+import {
+  buildProfile, extractAgeThresholds, computeBoundaryAges,
+  MARITAL_VALUES, EMPLOYMENT_VALUES, INCOME_VALUES, GENDER_VALUES, DISABLED_TAGS, CONCERN_TAGS,
+  CHILD_STATUSES, CHILD_STATUS_AGE, ELDERLY_RELATIONS, ELDERLY_CARE_LEVELS,
+} from './lib/profile-utils.mjs';
 
 const VERBOSE = process.argv.includes('--verbose');
 
@@ -74,54 +38,17 @@ const personas = [
 
 // ── 年齢閾値の自動抽出（services.js の cond 関数ソースから発見） ──
 // s.age / e.age（elderlyMembers要素） / c.age（children要素）に対する比較を正規表現で拾う
-function extractAgeThresholds(services) {
-  const thresholds = new Set();
-  const forward = /\b(?:parseInt\(\s*)?[sec]\.age\)?\s*(?:>=|<=|>|<|===|==)\s*(\d+)/g;
-  const backward = /(\d+)\s*(?:>=|<=|>|<|===|==)\s*(?:parseInt\(\s*)?[sec]\.age\)?/g;
-  for (const svc of services) {
-    const src = svc.cond.toString();
-    let m;
-    while ((m = forward.exec(src))) thresholds.add(Number(m[1]));
-    while ((m = backward.exec(src))) thresholds.add(Number(m[1]));
-  }
-  return [...thresholds].sort((a, b) => a - b);
-}
-
 const ageThresholds = extractAgeThresholds(SERVICES);
 console.log(`自動抽出した年齢閾値: ${ageThresholds.join(', ')}`);
 
 // 各閾値の前後1歳（N-1, N, N+1）を境界値プロフィールとして生成（重複年齢はまとめる）
-const boundaryAgeMap = new Map();
-for (const t of ageThresholds) {
-  for (const age of [t - 1, t, t + 1]) {
-    if (age < 0) continue;
-    if (!boundaryAgeMap.has(age)) boundaryAgeMap.set(age, new Set());
-    boundaryAgeMap.get(age).add(t);
-  }
-}
-for (const [age, srcThresholds] of [...boundaryAgeMap.entries()].sort((a, b) => a[0] - b[0])) {
+for (const { age, thresholds: srcThresholds } of computeBoundaryAges(ageThresholds)) {
   personas.push({ name: `境界値（閾値${[...srcThresholds].join('/')}近傍）：本人${age}歳のみ`, profile: { age: String(age) } });
 }
 
 // ── 属性の一因子ずつスイープ（one-factor-at-a-time） ──
 // 基準プロフィール：他の属性は固定し、1項目だけ変化させる
 const BASELINE = { age: '35', gender: 'male', marital: 'single', living: 'alone', employment: 'fulltime', housing: 'rental', income: 'middle' };
-
-const MARITAL_VALUES = ['single', 'married', 'div', 'widow'];
-const EMPLOYMENT_VALUES = ['fulltime', 'parttime', 'self', 'parental', 'unemployed', 'student', 'disabled_work'];
-const INCOME_VALUES = ['nontax', 'low', 'middle', 'high', 'unknown'];
-const GENDER_VALUES = ['male', 'female', 'other', 'none'];
-const DISABLED_TAGS = ['disabled', 'intellectual', 'mental', 'gray', 'hikikomori'];
-const CONCERN_TAGS = [
-  'pregnant', 'childcare', 'education', 'child_disability', 'nursing', 'work', 'money',
-  'housing_concern', 'health', 'mental_health', 'disability_service', 'hikikomori_concern',
-  'dv', 'disaster', 'foreign', 'consumer', 'infertility', 'dementia', 'vaccination',
-  'admin', 'tax', 'waste', 'transport', 'pet',
-];
-const CHILD_STATUSES = ['nursery', 'elementary', 'junior', 'high', 'futoko', 'special', 'none_school'];
-const CHILD_STATUS_AGE = { nursery: '3', elementary: '8', junior: '13', high: '16', futoko: '13', special: '8', none_school: '0' };
-const ELDERLY_RELATIONS = ['self', 'parent', 'grand', 'spouse', 'other'];
-const ELDERLY_CARE_LEVELS = ['unknown', 'none', 's1', 's2', 'c1', 'c2', 'c3', 'c4', 'c5'];
 
 for (const v of MARITAL_VALUES) personas.push({ name: `スイープ: marital=${v}`, profile: { ...BASELINE, marital: v } });
 for (const v of EMPLOYMENT_VALUES) personas.push({ name: `スイープ: employment=${v}`, profile: { ...BASELINE, employment: v } });

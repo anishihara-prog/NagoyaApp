@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "test": "node scripts/test-matching.mjs",
     "test:e2e": "node scripts/e2e-smoke.cjs",
-    "audit": "node scripts/audit-cond-patterns.mjs"
+    "audit": "node scripts/audit-cond-patterns.mjs",
+    "export:matrix": "node scripts/export-verification-matrix.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
