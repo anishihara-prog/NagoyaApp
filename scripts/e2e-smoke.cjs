@@ -271,6 +271,43 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5f. 知的障害タグ＋高齢者家族登録で、なごやか収集・障害者権利擁護センターが出ること（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('30');
+    await page.getByText('知的障害（療育手帳）', { exact: true }).click();
+    await page.getByText('高齢者を追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('70');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('知的障害タグ＋高齢者家族登録でなごやか収集が出る', body.includes('なごやか収集'));
+    record('知的障害タグ＋高齢者家族登録で障害者・高齢者権利擁護センターが出る', body.includes('障害者・高齢者権利擁護センター'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  // ── 5g. 知的障害タグ＋子ども登録で、名古屋市中央療育センターが出ること（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('35');
+    await page.getByText('知的障害（療育手帳）', { exact: true }).click();
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('5');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('知的障害タグ＋子ども登録で名古屋市中央療育センターが出る', body.includes('名古屋市中央療育センター'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });

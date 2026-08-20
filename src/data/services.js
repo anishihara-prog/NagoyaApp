@@ -419,7 +419,7 @@ export const SERVICES = [
     desc: 'ゴミ出しが困難な高齢者・障害者の自宅前でゴミを回収する名古屋市のサービス。',
     detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】ゴミステーションまでの排出が困難で、次のいずれかに該当する方\n・要介護者又は要支援者と認定された方\n・身体障害者手帳を所持する方\n・精神障害者保健福祉手帳を所持する方\n・愛護手帳を所持する方\n【内容】市の収集員が自宅玄関先までゴミを回収に来る\n【費用】無料\n【申請先】各区役所 環境事業所（区役所を通じて申請）',
     url: 'https://www.city.nagoya.jp/kurashi/gomi/1012183/1012252.html', contact: '各区役所 環境事業所',
-    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.some(m => parseInt(m.age) >= 65 || ['s1','s2','c1','c2','c3','c4','c5'].includes(m.careLevel)) || s.elderlyMembers?.length > 0 || s.disabledMembers?.length > 0 || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.sit?.includes('nursing'),
+    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.some(m => parseInt(m.age) >= 65 || ['s1','s2','c1','c2','c3','c4','c5'].includes(m.careLevel)) || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.sit?.includes('nursing'),
   },
   {
     id: 52, title: 'あんしんエンディングサポート事業', cat: 'elderly', subcat: 'elderly_rights', urgent: false, target: 'adult', grayzone: false,
@@ -443,7 +443,7 @@ export const SERVICES = [
     desc: '高齢者虐待・成年後見・財産管理など権利に関する相談を受ける専門機関。市内2か所。',
     detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】高齢者・障害者とその家族・支援者\n【相談内容】高齢者虐待 / 成年後見制度の活用 / 財産管理 / 権利侵害\n【費用】相談無料',
     url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016484/1016491.html', contact: '東部：052-803-6100 西部：052-433-6580\n北部：052-919-7584 南部：052-678-3030',
-    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0 || s.disabledMembers?.length > 0 || s.sit?.includes('elderly') || s.sit?.includes('disabled'),
+    welnet: false, cond: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('elderly') || s.sit?.includes('disabled'),
   },
   {
     id: 55, title: '救急安心センターなごや（#7119）', cat: 'emergency', urgent: true, target: 'adult', grayzone: false,
@@ -640,7 +640,7 @@ export const SERVICES = [
     desc: '発達障害・肢体不自由等の診断・療育・療育手帳判定を行う専門機関。',
     detail: '【対象年齢】子どもがいる（年齢不問）\n【対象】発達障害・肢体不自由・知的障害等が疑われる子どもとその家族\n【内容】①発達診断・検査 ②療育（通所）③療育手帳（愛護手帳）の判定 ④相談支援\n【手帳なしでも相談可】\n【場所】〒466-0858 愛知県名古屋市昭和区折戸町4丁目16',
     url: 'https://www.city.nagoya.jp/kodomo/wakamono/1034350/1015819/1038028/index.html', contact: '名古屋市中央療育センター（052-757-6126）',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('gray') || s.concerns?.includes('child_disability') || s.children?.some(c => c.status === 'special'),
+    welnet: false, cond: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('gray') || s.concerns?.includes('child_disability') || s.children?.some(c => c.status === 'special'),
   },
   {
     id: 78, title: '名古屋市配偶者暴力相談支援センター（DV相談）', cat: 'welfare', urgent: true, target: 'adult', grayzone: false,
