@@ -38,7 +38,7 @@ export const COND_FUNCTIONS = {
   34: (s) => s.children.length > 0 || s.concerns?.includes('pregnant'),
   35: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.children?.some(c => c.status === 'futoko'),
   36: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern'),
-  37: (s) => s.disabledMembers?.includes('hikikomori') || s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('mental') || s.concerns?.includes('mental_health'),
+  37: (s) => s.disabledMembers?.includes('hikikomori') || s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('mental') || s.concerns?.includes('mental_health') || s.concerns?.includes('health') || s.sit?.includes('hikikomori') || s.sit?.includes('gray') || s.sit?.includes('disabled'),
   38: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   39: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,
   40: (s) => (s.marital === 'div' || s.marital === 'widow') && s.children.length > 0,

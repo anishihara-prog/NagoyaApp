@@ -316,7 +316,7 @@ export const SERVICES = [
     desc: 'こころの悩み・ひきこもり・依存症など幅広く相談できる市の専門機関。無料・予約制。',
     detail: '【対象】こころの健康に悩むすべての方・家族\n【相談内容】うつ・不安・ひきこもり・依存症・精神疾患など\n【費用】無料\n【場所】中村区名楽町4-7-18 名古屋市精神保健福祉センター内',
     url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016579/1016586/1033908.html', contact: '052-483-2095',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('hikikomori') || s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('mental') || s.concerns?.includes('mental_health') || s.concerns?.includes('health') || s.sit?.includes('hikikomori') || s.sit?.includes('gray') || s.sit?.includes('disabled') || true,
+    welnet: false, cond: (s) => s.disabledMembers?.includes('hikikomori') || s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('mental') || s.concerns?.includes('mental_health') || s.concerns?.includes('health') || s.sit?.includes('hikikomori') || s.sit?.includes('gray') || s.sit?.includes('disabled'),
   },
   {
     id: 38, title: 'ひとり親家庭等生活支援事業（ヘルパー派遣・子ども一時預かり）', cat: 'welfare', urgent: false, target: 'adult', grayzone: false,

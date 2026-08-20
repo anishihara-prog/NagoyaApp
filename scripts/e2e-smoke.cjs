@@ -149,7 +149,6 @@ async function main() {
     record('ひきこもり状態の成人家族（15〜49歳）向けになごや若者サポートステーションが出る', adultBlockText.includes('なごや若者サポートステーション'));
     record('本人向けサービスに成人家族のひきこもり情報が漏れていない（過去バグの回帰確認）', !selfBlockText.includes('なごや若者サポートステーション') && !selfBlockText.includes('まえジョブ'));
     record('本人（50歳）に本来関係ある特定健康診査が消えていない（成人家族登録による過剰除外の回帰確認）', selfBlockText.includes('特定健康診査'));
-    record('本人向けにここらぼ（常時表示の相談窓口）が消えていない（過剰除外の回帰確認）', selfBlockText.includes('ここらぼ'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
@@ -267,6 +266,28 @@ async function main() {
     record('「障害等で未就労」を選ぶと障害者手帳（身体・療育・精神）が出る', body.includes('障害者手帳（身体・療育・精神）'));
     record('「障害等で未就労」を選ぶと障害福祉サービス（居宅介護・就労支援等）が出る', body.includes('障害福祉サービス（居宅介護・就労支援等）'));
     record('「障害等で未就労」を選ぶと障害者医療費助成制度が出る', body.includes('障害者医療費助成制度'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  // ── 5f0. ここらぼが「困りごと」未選択では出ず、「心の健康・メンタルのこと」選択時のみ出ること（常時表示仕様の廃止確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('30');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const bodyWithoutConcern = await page.locator('body').innerText();
+    record('困りごと未選択ではここらぼが出ない（常時表示仕様の廃止確認）', !bodyWithoutConcern.includes('ここらぼ'));
+
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(1500);
+    await page.getByPlaceholder('例：13').fill('30');
+    await page.getByText('心の健康・メンタルのこと', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const bodyWithConcern = await page.locator('body').innerText();
+    record('「心の健康・メンタルのこと」選択でここらぼが出る', bodyWithConcern.includes('ここらぼ'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
