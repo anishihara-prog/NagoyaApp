@@ -660,7 +660,7 @@ function ServiceCard({ svc, onPress }) {
       <View style={styles.cardTitleRow}>
         {isEmergency && <Ionicons name="warning" size={15} color="#B71C1C" style={{ marginRight: 4, marginTop: 1 }} />}
         {svc.urgent && !isEmergency && <Ionicons name="alert-circle" size={15} color={colors.accent} style={{ marginRight: 4, marginTop: 1 }} />}
-        <Text style={[styles.cardTitle, isEmergency && { color: '#B71C1C' }]}>{svc.title}</Text>
+        <Text style={[styles.cardTitle, isEmergency && { color: '#B71C1C' }]}>[{svc.id}] {svc.title}</Text>
       </View>
       <Text style={styles.cardDesc} numberOfLines={2}>{svc.desc}</Text>
       <View style={styles.cardMeta}>

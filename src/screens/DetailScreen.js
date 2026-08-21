@@ -75,7 +75,7 @@ export default function DetailScreen({ navigation, route }) {
               <Text style={styles.urgentText}>早めに申請推奨</Text>
             </View>
           )}
-          <Text style={styles.title}>{svc.title}</Text>
+          <Text style={styles.title}>[{svc.id}] {svc.title}</Text>
           <Text style={styles.desc}>{svc.desc}</Text>
         </View>
 
