@@ -65,7 +65,7 @@ export default function ResultsScreen({ navigation, route }) {
     if (svc.id === 5) return childAges.some(a => a >= 6 && a <= 12);
     if (svc.id === 14) return (myAge >= 40 && myAge <= 74) || profile.concerns?.includes('health');
     if (svc.id === 15) return myAge >= 20 || profile.concerns?.includes('health');
-    if (svc.id === 16) return myAge >= 65 || profile.elderlyMembers?.length > 0;
+    if (svc.id === 16) return myAge >= 65;
     if (svc.id === 13) return myAge >= 65 || profile.elderlyMembers?.length > 0;
     // 高校・大学関連サービス：本人が中高生・大学生年齢の場合も表示
     if (svc.id === 108 || svc.id === 109) return childAges.some(a => a >= 15 && a <= 18) || (myAge >= 15 && myAge <= 18);

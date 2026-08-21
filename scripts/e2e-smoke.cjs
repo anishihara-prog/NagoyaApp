@@ -496,6 +496,35 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5m. 高齢者インフルエンザ予防接種費用助成(id16)は本人65歳以上のみが対象で、
+  //        高齢者家族の同居だけでは出ないこと（ユーザー指示による仕様変更の回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('50');
+    await page.getByText('高齢者を追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('75');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const body1 = await page.locator('body').innerText();
+    record('本人50歳＋高齢者家族登録のみで高齢者インフルエンザ予防接種費用助成が出ない', !body1.includes('高齢者インフルエンザ予防接種費用助成'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('65');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const body2 = await page.locator('body').innerText();
+    record('本人65歳のみで高齢者インフルエンザ予防接種費用助成が出る', body2.includes('高齢者インフルエンザ予防接種費用助成'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });

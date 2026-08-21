@@ -17,7 +17,7 @@ export const COND_FUNCTIONS = {
   13: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.some(e => parseInt(e.age) >= 65),
   14: (s) => parseInt(s.age) >= 40 && parseInt(s.age) <= 74,
   15: (s) => parseInt(s.age) >= 20,
-  16: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0,
+  16: (s) => parseInt(s.age) >= 65,
   17: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
   18: (s) => s.income === 'low' || s.income === 'nontax' || s.sit?.includes('lowincome'),
   19: (s) => s.income === 'low' || s.income === 'nontax' || s.concerns?.includes('money'),
