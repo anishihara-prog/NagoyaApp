@@ -383,6 +383,72 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5k. isAgeMatchのハードコードがcond()と食い違っていたことによる非表示バグの回帰確認
+  //        （id1/2: 子ども16〜18歳、id3: 妊娠中で子ども未登録、id4: 子ども6歳、
+  //          id110: 本人15〜16歳、id145: 妊娠の困りごとがwelfareカテゴリを絞り込みで除外） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('40');
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('17');
+    await page.getByText('中学生', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('子ども17歳登録で児童手当が出る（isAgeMatch=15の古い上限の回帰確認）', body.includes('児童手当'));
+    record('子ども17歳登録で子ども医療費助成が出る（isAgeMatch=15の古い上限の回帰確認）', body.includes('子ども医療費助成'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('30');
+    await page.getByText('妊娠・出産のこと', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('妊娠の困りごと（子ども未登録）で保育所・認定こども園の入所申請が出る（isAgeMatchの回帰確認）', body.includes('保育所・認定こども園の入所申請'));
+    record('妊娠の困りごと（子ども未登録）で名古屋市妊産婦等生活援助事業が出る（concernMatchのwelfareカテゴリ追加の回帰確認）', body.includes('名古屋市妊産婦等生活援助事業'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('16');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('本人16歳で高等教育の修学支援新制度（大学・専門学校）が出る（isAgeMatch=17〜25の古い下限の回帰確認）', body.includes('高等教育の修学支援新制度（大学・専門学校）'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('35');
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('6');
+    await page.getByText('保育所・幼稚園通園中', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('子ども6歳登録で幼児教育・保育の無償化が出る（isAgeMatch=5の古い上限の回帰確認）', body.includes('幼児教育・保育の無償化'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });

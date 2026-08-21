@@ -58,10 +58,10 @@ export default function ResultsScreen({ navigation, route }) {
   const isAgeMatch = (svc, profile) => {
     const myAge = parseInt(profile.age) || 0;
     const childAges = profile.children?.map(c => c.age || c) || [];
-    if (svc.id === 1) return childAges.some(a => a <= 15) || (myAge >= 12 && myAge <= 18);
-    if (svc.id === 2) return childAges.some(a => a <= 15) || (myAge >= 12 && myAge <= 18);
-    if (svc.id === 3) return childAges.some(a => a <= 5);
-    if (svc.id === 4) return childAges.some(a => a <= 5);
+    if (svc.id === 1) return childAges.some(a => a <= 18) || (myAge >= 12 && myAge <= 18);
+    if (svc.id === 2) return childAges.some(a => a <= 18) || (myAge >= 12 && myAge <= 18);
+    if (svc.id === 3) return childAges.some(a => a <= 5) || profile.sit?.includes('pregnant') || profile.concerns?.includes('pregnant');
+    if (svc.id === 4) return childAges.some(a => a <= 6);
     if (svc.id === 5) return childAges.some(a => a >= 6 && a <= 12);
     if (svc.id === 14) return (myAge >= 40 && myAge <= 74) || profile.concerns?.includes('health');
     if (svc.id === 15) return myAge >= 20 || profile.concerns?.includes('health');
@@ -69,7 +69,7 @@ export default function ResultsScreen({ navigation, route }) {
     if (svc.id === 13) return myAge >= 65 || profile.elderlyMembers?.length > 0;
     // 高校・大学関連サービス：本人が中高生・大学生年齢の場合も表示
     if (svc.id === 108 || svc.id === 109) return childAges.some(a => a >= 15 && a <= 18) || (myAge >= 15 && myAge <= 18);
-    if (svc.id === 110) return childAges.some(a => a >= 17 && a <= 22) || (myAge >= 17 && myAge <= 25);
+    if (svc.id === 110) return childAges.some(a => a >= 15 && a <= 22) || (myAge >= 15 && myAge <= 25);
     return true;
   };
 
@@ -77,7 +77,7 @@ export default function ResultsScreen({ navigation, route }) {
   const concernMatch = (svc, concerns) => {
     if (!concerns || concerns.length === 0) return true;
     const catMap = {
-      pregnant:           ['child', 'health', 'money', 'work'],
+      pregnant:           ['child', 'health', 'money', 'work', 'welfare'],
       childcare:          ['child', 'money', 'work'],
       education:          ['child', 'money'],
       child_disability:   ['child', 'welfare'],
