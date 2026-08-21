@@ -496,8 +496,8 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
-  // ── 5m. 高齢者インフルエンザ予防接種費用助成(id16)は本人65歳以上のみが対象で、
-  //        高齢者家族の同居だけでは出ないこと（ユーザー指示による仕様変更の回帰確認） ──
+  // ── 5m. 高齢者インフルエンザ予防接種費用助成(id16)は本人65歳以上、または
+  //        高齢者家族の同居のいずれでも対象になること ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
     await page.waitForTimeout(2000);
@@ -508,7 +508,7 @@ async function main() {
     await page.getByText('サービスを検索する', { exact: true }).click();
     await page.waitForTimeout(2000);
     const body1 = await page.locator('body').innerText();
-    record('本人50歳＋高齢者家族登録のみで高齢者インフルエンザ予防接種費用助成が出ない', !body1.includes('高齢者インフルエンザ予防接種費用助成'));
+    record('本人50歳＋高齢者家族登録で高齢者インフルエンザ予防接種費用助成が出る', body1.includes('高齢者インフルエンザ予防接種費用助成'));
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
