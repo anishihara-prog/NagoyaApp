@@ -366,6 +366,23 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5j. 本人70歳（困りごと未選択）で、年齢だけで自動追加される「介護」concernにより
+  //        無関係なカテゴリ（医療・給付）の項目が誤って絞り込まれて消えないこと（過去バグの回帰確認） ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('70');
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+
+    const body = await page.locator('body').innerText();
+    record('本人70歳（困りごと未選択）で特定健康診査が本人向けに出る', body.includes('特定健康診査'));
+    record('本人70歳（困りごと未選択）で市民税減税が本人向けに出る', body.includes('市民税減税'));
+    record('本人70歳（困りごと未選択）でがん検診が本人向けに出る', body.includes('がん検診'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });

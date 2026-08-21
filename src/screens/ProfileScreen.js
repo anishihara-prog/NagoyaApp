@@ -108,6 +108,10 @@ export default function ProfileScreen({ navigation }) {
         adultMembers,
         disabledMembers,
         concerns: autoConcerns,
+        // 本人が「困っていること」で明示的に選んだものだけ（cond()の判定にはautoConcernsを
+        // 使うが、結果の絞り込み表示（concernMatch）は自動追加分で無関係なカテゴリまで
+        // 狭めてしまわないよう、こちらを使う）
+        explicitConcerns: concerns,
         sit: [
           ...(disabledMembers.includes('disabled') || employment === 'disabled_work' ? ['disabled'] : []),
           ...(disabledMembers.includes('gray') ? ['gray'] : []),

@@ -117,7 +117,7 @@ export default function ResultsScreen({ navigation, route }) {
       ? list
       : list
           .filter(s => isAgeMatch(s, profile))
-          .filter(s => concernMatch(s, profile.concerns));
+          .filter(s => concernMatch(s, profile.explicitConcerns));
 
     const valid = matchList(matched);
     const emergency = valid.filter(s => s.cat === 'emergency');
@@ -165,7 +165,7 @@ export default function ResultsScreen({ navigation, route }) {
         .filter(s => s.target === 'child')
         .filter(s => showAll || s.cond(childProfile))
         .filter(s => isAgeMatch(s, childProfile))
-        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .filter(s => showAll || concernMatch(s, profile.explicitConcerns))
         .sort(byCat);
       return { key: child.id ?? idx, idx, age: child.age, status: child.status, services };
     });
@@ -203,7 +203,7 @@ export default function ResultsScreen({ navigation, route }) {
         .filter(s => s.cat === 'elderly')
         .filter(s => showAll || s.cond(elderProfile))
         .filter(s => isAgeMatch(s, elderProfile))
-        .filter(s => showAll || concernMatch(s, profile.concerns))
+        .filter(s => showAll || concernMatch(s, profile.explicitConcerns))
         .sort(byTitle);
       return { key: elder.id ?? idx, idx, age: elder.age, relation: elder.relation, services };
     });
@@ -323,7 +323,7 @@ export default function ResultsScreen({ navigation, route }) {
       ? matched
       : matched
           .filter(s => isAgeMatch(s, profile))
-          .filter(s => concernMatch(s, profile.concerns));
+          .filter(s => concernMatch(s, profile.explicitConcerns));
     if (activeCat === 'all') return allValid;
     return allValid.filter(s => s.cat === activeCat);
   }, [matched, activeCat, profile, showAll]);
