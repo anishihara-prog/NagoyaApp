@@ -7,6 +7,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
 import { SERVICES, CAT_LABELS, CAT_COLORS } from '../data/services';
+import MATCH_CONDITION_LABELS from '../data/matchConditionLabels.json';
+
+const TARGET_LABELS = { child: '子ども', adult: '本人・大人', both: '両方' };
+
+// 【対象】【必要書類】等のdetail見出しを、開発確認用レイアウトのセクションに振り分ける
+const SECTION_RULES = [
+  { key: 'target', title: '対象となる方', match: /^対象/, canonical: ['対象', '対象年齢'] },
+  { key: 'procedure', title: '手続きの流れ', match: /^(申請|受付|利用方法|手続き)/, canonical: ['申請方法', '申請先'] },
+  { key: 'needed', title: '必要なもの', match: /^必要書類/, canonical: ['必要書類'] },
+];
+
+function parseDetailSections(detail) {
+  const lines = (detail || '').split('\n').filter(l => l.trim());
+  const sections = { target: [], procedure: [], needed: [], other: [] };
+  for (const line of lines) {
+    const m = line.match(/^【([^】]+)】(.*)$/);
+    if (!m) { sections.other.push(line); continue; }
+    const [, label, body] = m;
+    const rule = SECTION_RULES.find(r => r.match.test(label));
+    if (rule) {
+      const isCanonical = rule.canonical.includes(label);
+      sections[rule.key].push(isCanonical ? body : `${label}：${body}`);
+    } else {
+      sections.other.push(`【${label}】${body}`);
+    }
+  }
+  return sections;
+}
 
 export default function DetailScreen({ navigation, route }) {
   const { svcId } = route.params;
@@ -26,19 +54,16 @@ export default function DetailScreen({ navigation, route }) {
     ? svc.url
     : 'https://www.city.nagoya.jp/';
 
-  const detailLines = (svc.detail || '').split('\n');
+  const sections = parseDetailSections(svc.detail);
+  const matchConditionLabel = MATCH_CONDITION_LABELS[String(svc.id)];
 
-  // 対象者情報を detail から抽出（年齢確認用）
-  const ageTargets = (() => {
-    if (!svc.detail) return [];
-    const results = [];
-    const re = /【対象[^】]*】([^\n]+)/g;
-    let m;
-    while ((m = re.exec(svc.detail)) !== null) {
-      results.push(m[0].replace(/【([^】]+)】/, '[$1] '));
-    }
-    return results;
-  })();
+  const infoTags = [
+    CAT_LABELS[svc.cat],
+    TARGET_LABELS[svc.target] || '対象不問',
+    svc.grayzone && '手帳・診断なしでも相談OK',
+    svc.urgent && '早めに申請推奨',
+    svc.welnet && 'ウェルネット対応',
+  ].filter(Boolean);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -50,89 +75,77 @@ export default function DetailScreen({ navigation, route }) {
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={true}>
-        <View style={styles.hero}>
-          <View style={styles.tagRow}>
-            <View style={[styles.catTag, { backgroundColor: catColor.bg }]}>
-              <Text style={[styles.catTagText, { color: catColor.text }]}>{CAT_LABELS[svc.cat]}</Text>
-            </View>
-            {svc.grayzone && (
-              <View style={styles.grayBadge}>
-                <Ionicons name="information-circle-outline" size={13} color="#7B4EA0" />
-                <Text style={styles.grayBadgeText}>手帳・診断なしでも相談OK</Text>
-              </View>
-            )}
-            {svc.welnet && (
-              <View style={styles.welnetBadge}>
-                <Ionicons name="search-outline" size={12} color="#185FA5" />
-                <Text style={styles.welnetBadgeText}>ウェルネット対応</Text>
-              </View>
-            )}
+        <View style={styles.card}>
+          <View style={styles.catTag}>
+            <Text style={[styles.catTagText, { color: catColor.text }]}>{CAT_LABELS[svc.cat]}</Text>
           </View>
 
-          {svc.urgent && (
-            <View style={styles.urgentBadge}>
-              <Ionicons name="alert-circle" size={13} color={colors.accent} />
-              <Text style={styles.urgentText}>早めに申請推奨</Text>
-            </View>
-          )}
           <Text style={styles.title}>[{svc.id}] {svc.title}</Text>
           <Text style={styles.desc}>{svc.desc}</Text>
-        </View>
 
-        {/* 対象者・年齢要件 */}
-        {ageTargets.length > 0 && (
-          <View style={styles.ageCard}>
-            <View style={styles.ageCardHeader}>
-              <Ionicons name="people" size={15} color="#1565C0" />
-              <Text style={styles.ageCardTitle}>対象者・年齢要件</Text>
-            </View>
-            {ageTargets.map((t, i) => (
-              <Text key={i} style={styles.ageCardText}>{t}</Text>
-            ))}
-          </View>
-        )}
+          <View style={styles.divider} />
 
-        {/* グレーゾーン向け説明 */}
-        {svc.grayzone && (
-          <View style={styles.grayCard}>
-            <View style={styles.grayCardHeader}>
-              <Ionicons name="heart-outline" size={16} color="#7B4EA0" />
-              <Text style={styles.grayCardTitle}>診断がなくても大丈夫です</Text>
-            </View>
-            <Text style={styles.grayCardText}>
-              「もしかしたら…」と感じている段階でも相談できます。まずは窓口に連絡してみてください。支援者があなたの状況を一緒に整理し、必要なサービスにつないでくれます。
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.detailCard}>
-          <Text style={styles.detailHeading}>詳細情報</Text>
-          {detailLines.map((line, i) => {
-            if (!line.trim()) return null;
-            const isBold = line.startsWith('【');
-            return (
-              <Text key={i} style={[styles.detailLine, isBold && styles.detailBold]}>
-                {line}
-              </Text>
-            );
-          })}
-        </View>
-
-        <View style={styles.contactCard}>
-          <View style={styles.contactRow}>
-            <Ionicons name="business-outline" size={16} color={colors.primary} />
-            <Text style={styles.contactLabel}>申請・問合せ先</Text>
-          </View>
-          <Text style={styles.contactValue}>{svc.contact}</Text>
-          {svc.hours && (
-            <View style={styles.hoursRow}>
-              <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
-              <Text style={styles.hoursValue}>{svc.hours}</Text>
+          {sections.target.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>対象となる方</Text>
+              {sections.target.map((t, i) => <Text key={i} style={styles.sectionText}>{t}</Text>)}
             </View>
           )}
+
+          {sections.procedure.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>手続きの流れ</Text>
+              {sections.procedure.map((t, i) => <Text key={i} style={styles.sectionText}>・{t}</Text>)}
+            </View>
+          )}
+
+          {sections.needed.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>必要なもの</Text>
+              {sections.needed.map((t, i) => <Text key={i} style={styles.sectionText}>・{t}</Text>)}
+            </View>
+          )}
+
+          {sections.other.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>その他</Text>
+              {sections.other.map((t, i) => <Text key={i} style={styles.sectionText}>{t}</Text>)}
+            </View>
+          )}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>窓口・問い合わせ先</Text>
+            <Text style={styles.sectionText}>{svc.contact}</Text>
+            {svc.hours && <Text style={styles.sectionText}>{svc.hours}</Text>}
+          </View>
+
+          <View style={styles.tagRow}>
+            {infoTags.map((t, i) => (
+              <View key={i} style={styles.infoTag}>
+                <Text style={styles.infoTagText}>{t}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* DEV ONLY: マッチ条件（日本語）の確認用。本番リリース前に削除すること */}
+          {matchConditionLabel ? (
+            <View style={styles.devSection}>
+              <Text style={styles.devSectionTitle}>[開発用] マッチ条件（日本語）</Text>
+              <Text style={styles.devSectionText}>{matchConditionLabel}</Text>
+            </View>
+          ) : null}
         </View>
 
-        {/* ウェルネット名古屋ボタン */}
+        <TouchableOpacity
+          style={styles.linkBtn}
+          onPress={() => openURL(officialUrl)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="globe-outline" size={16} color={colors.primary} />
+          <Text style={styles.linkBtnText}>{svc.urlLabel || '名古屋市公式サイトで確認する'}</Text>
+          <Ionicons name="open-outline" size={14} color={colors.primary} />
+        </TouchableOpacity>
+
         {svc.welnet && (
           <TouchableOpacity
             style={styles.welnetBtn}
@@ -147,16 +160,6 @@ export default function DetailScreen({ navigation, route }) {
             <Ionicons name="open-outline" size={14} color="#185FA5" />
           </TouchableOpacity>
         )}
-
-        <TouchableOpacity
-          style={styles.linkBtn}
-          onPress={() => openURL(officialUrl)}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="globe-outline" size={16} color={colors.primary} />
-          <Text style={styles.linkBtnText}>{svc.urlLabel || '名古屋市公式サイトで確認する'}</Text>
-          <Ionicons name="open-outline" size={14} color={colors.primary} />
-        </TouchableOpacity>
 
         {svc.externalUrl && (
           <TouchableOpacity
@@ -195,60 +198,35 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: font.semibold, color: colors.textPrimary },
   scroll: { flex: 1 },
-  hero: { padding: spacing.lg, paddingBottom: spacing.md },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  catTag: { alignSelf: 'flex-start', borderRadius: radius.full, paddingHorizontal: 11, paddingVertical: 4 },
+  card: {
+    margin: spacing.lg, marginTop: spacing.sm,
+    backgroundColor: colors.bgSecondary, borderRadius: radius.lg, padding: 18,
+  },
+  catTag: { alignSelf: 'flex-start', borderRadius: radius.full, backgroundColor: '#E9EEF3', paddingHorizontal: 11, paddingVertical: 4, marginBottom: 10 },
   catTagText: { fontSize: 11, fontWeight: font.medium },
-  grayBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#F3EAFA', borderRadius: radius.full,
-    paddingHorizontal: 10, paddingVertical: 4,
+  title: { fontSize: 19, fontWeight: font.semibold, color: colors.textPrimary, lineHeight: 26, marginBottom: 6 },
+  desc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 14 },
+  section: { marginBottom: 14 },
+  sectionTitle: { fontSize: 13, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: 5 },
+  sectionText: { fontSize: 13, color: colors.textSecondary, lineHeight: 21 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  infoTag: { backgroundColor: '#EFF2F5', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 5 },
+  infoTagText: { fontSize: 11, color: colors.textSecondary, fontWeight: font.medium },
+  devSection: {
+    marginTop: 16, padding: 12, borderRadius: radius.md,
+    borderWidth: 1, borderStyle: 'dashed', borderColor: '#E0A800', backgroundColor: '#FFF9E8',
   },
-  grayBadgeText: { fontSize: 11, fontWeight: font.medium, color: '#7B4EA0' },
-  welnetBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: colors.primaryBg, borderRadius: radius.full,
-    paddingHorizontal: 10, paddingVertical: 4,
+  devSectionTitle: { fontSize: 11, fontWeight: font.semibold, color: '#8A6300', marginBottom: 4 },
+  devSectionText: { fontSize: 12, color: '#6B4E00', lineHeight: 19 },
+  linkBtn: {
+    marginHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 7, backgroundColor: colors.bgSecondary, borderRadius: radius.lg,
+    paddingVertical: 14, borderWidth: 0.5, borderColor: colors.border,
   },
-  welnetBadgeText: { fontSize: 11, fontWeight: font.medium, color: '#185FA5' },
-  urgentBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 },
-  urgentText: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
-  title: { fontSize: 20, fontWeight: font.semibold, color: colors.textPrimary, lineHeight: 28, marginBottom: 8 },
-  desc: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
-  ageCard: {
-    margin: spacing.lg, marginTop: 0, marginBottom: spacing.md,
-    backgroundColor: '#E3F0FB', borderRadius: radius.lg, padding: 14,
-    borderLeftWidth: 3, borderLeftColor: '#1565C0',
-  },
-  ageCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 7 },
-  ageCardTitle: { fontSize: 13, fontWeight: font.semibold, color: '#1565C0' },
-  ageCardText: { fontSize: 12, color: '#0D3B66', lineHeight: 20 },
-  grayCard: {
-    margin: spacing.lg, marginTop: 4, marginBottom: 0,
-    backgroundColor: '#F3EAFA', borderRadius: radius.lg, padding: 14,
-    borderLeftWidth: 3, borderLeftColor: '#7B4EA0',
-  },
-  grayCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  grayCardTitle: { fontSize: 13, fontWeight: font.semibold, color: '#7B4EA0' },
-  grayCardText: { fontSize: 12, color: '#4A2D6B', lineHeight: 20 },
-  detailCard: {
-    margin: spacing.lg, marginTop: spacing.md,
-    backgroundColor: colors.bgSecondary, borderRadius: radius.lg, padding: 16,
-  },
-  detailHeading: { fontSize: 12, fontWeight: font.semibold, color: colors.textTertiary, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 12 },
-  detailLine: { fontSize: 13, color: colors.textSecondary, lineHeight: 22, marginBottom: 2 },
-  detailBold: { fontWeight: font.semibold, color: colors.textPrimary, marginTop: 6 },
-  contactCard: {
-    marginHorizontal: spacing.lg, marginBottom: 12,
-    borderWidth: 0.5, borderColor: colors.border, borderRadius: radius.lg, padding: 14,
-  },
-  contactRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  contactLabel: { fontSize: 12, fontWeight: font.semibold, color: colors.primary },
-  contactValue: { fontSize: 14, color: colors.textPrimary, fontWeight: font.medium },
-  hoursRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginTop: 7 },
-  hoursValue: { fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 18 },
+  linkBtnText: { fontSize: 14, fontWeight: font.semibold, color: colors.primary },
   welnetBtn: {
-    marginHorizontal: spacing.lg, marginBottom: 10,
+    marginHorizontal: spacing.lg, marginTop: 10,
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: '#E6F1FB', borderRadius: radius.lg,
     paddingVertical: 14, paddingHorizontal: 16,
@@ -257,12 +235,6 @@ const styles = StyleSheet.create({
   welnetBtnTextWrap: { flex: 1 },
   welnetBtnTitle: { fontSize: 13, fontWeight: font.semibold, color: '#185FA5' },
   welnetBtnSub: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
-  linkBtn: {
-    marginHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 7, backgroundColor: colors.bgSecondary, borderRadius: radius.lg,
-    paddingVertical: 14, borderWidth: 0.5, borderColor: colors.border,
-  },
-  linkBtnText: { fontSize: 14, fontWeight: font.semibold, color: colors.primary },
   externalLinkBtn: {
     marginHorizontal: spacing.lg, marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 7, backgroundColor: '#F3E5F5', borderRadius: radius.lg,
