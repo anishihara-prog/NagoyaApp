@@ -449,6 +449,53 @@ async function main() {
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
 
+  // ── 5l. なごやフレンドリーナウ（不登校支援、対象は小中学生）が学年を問わず
+  //        マッチしていた不具合の回帰確認 ──
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('40');
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('17');
+    await page.getByText('不登校・登校しぶり', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const body1 = await page.locator('body').innerText();
+    record('高校生（17歳）の不登校でなごやフレンドリーナウが出ない（対象年齢外の回帰確認）', !body1.includes('なごやフレンドリーナウ'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('40');
+    await page.getByText('子どもを追加', { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.locator('input[placeholder="歳"]').first().fill('13');
+    await page.getByText('不登校・登校しぶり', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const body2 = await page.locator('body').innerText();
+    record('中学生（13歳）の不登校でなごやフレンドリーナウが出る', body2.includes('なごやフレンドリーナウ'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
+  await withPage(browser, async (page, errors) => {
+    await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForTimeout(2000);
+    await page.getByPlaceholder('例：13').fill('40');
+    await page.getByText('子どもの教育・学校のこと', { exact: true }).click();
+    await page.getByText('サービスを検索する', { exact: true }).click();
+    await page.waitForTimeout(2000);
+    const body3 = await page.locator('body').innerText();
+    record('子ども未登録・教育の困りごとのみでなごやフレンドリーナウが出ない（子ども登録なしでの誤マッチの回帰確認）', !body3.includes('なごやフレンドリーナウ'));
+
+    record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
+  });
+
   // ── 6. 防災情報：乳幼児（0〜5歳）がいる世帯で要配慮者カードが出ること（過去バグの回帰確認） ──
   await withPage(browser, async (page, errors) => {
     await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 60000 });

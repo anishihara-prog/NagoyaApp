@@ -75,7 +75,7 @@ export const COND_FUNCTIONS = {
   71: (s) => s.children.length > 0 || s.concerns?.includes('childcare'),
   72: (s) => s.children.some(c => (c.age||c) >= 6 && (c.age||c) <= 15) && (s.income === 'low' || s.income === 'nontax'),
   73: (s) => s.children.some(c => (c.age||c) >= 14 && (c.age||c) <= 16) && (s.income === 'low' || s.income === 'nontax'),
-  74: (s) => s.children?.some(c => c.status === 'futoko') || s.concerns?.includes('education') || s.concerns?.includes('hikikomori_concern'),
+  74: (s) => s.children?.some(c => (c.age || c) <= 15 && (c.status === 'futoko' || s.concerns?.includes('education') || s.concerns?.includes('hikikomori_concern'))),
   75: (s) => s.children.length > 0 || s.concerns?.includes('dv') || s.concerns?.includes('child_disability'),
   76: (s) => s.children.length > 0 || s.concerns?.includes('dv') || s.concerns?.includes('education'),
   77: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('gray') || s.concerns?.includes('child_disability') || s.children?.some(c => c.status === 'special'),

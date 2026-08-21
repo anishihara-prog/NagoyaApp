@@ -617,7 +617,7 @@ export const SERVICES = [
     detail: '【対象】心理的な理由によって登校できない名古屋市内の小中学生とその保護者\n【内容】個別相談・グループ活動・学習支援・心理的サポート\n【受付時間】月曜日から金曜日（祝日、年末年始を除く）、午前8時45分から午後5時30分まで\n【申込方法】見学（要予約）後、在籍する学校を通じて申込\n【費用】無料',
     url: 'https://www.city.nagoya.jp/kodomo/schools/1015850/1017055.html', contact: '〈浄心・笠寺の見学予約〉052-521-9640／〈鶴舞の見学予約〉052-262-2320／〈大曽根の見学予約〉052-750-8971／通所せず電話相談のみ「ハートフレンドなごや」052-683-8222',
     hours: '応対時間：月〜金（祝日、年末年始を除く）、8:45〜17:30',
-    welnet: false, cond: (s) => s.children?.some(c => c.status === 'futoko') || s.concerns?.includes('education') || s.concerns?.includes('hikikomori_concern'),
+    welnet: false, cond: (s) => s.children?.some(c => (c.age || c) <= 15 && (c.status === 'futoko' || s.concerns?.includes('education') || s.concerns?.includes('hikikomori_concern'))),
     extraLinks: [{ url: 'https://nagoya.fureai-cloud.jp/_view/sodan/home/index', label: '電話相談 ハートフレンドなごや' }],
   },
   {
