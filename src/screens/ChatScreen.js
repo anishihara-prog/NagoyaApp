@@ -19,7 +19,7 @@ function buildProfileText(profile) {
   if (profile.gender && profile.gender !== 'none') p.push(gm[profile.gender]);
   const mm = { single: '独身', married: '既婚', div: 'ひとり親（離婚・別居）', widow: 'ひとり親（死別）' };
   if (profile.marital) p.push(mm[profile.marital]);
-  if (profile.children?.length) p.push('子ども' + profile.children.length + '人（' + profile.children.join('・') + '歳）');
+  if (profile.children?.length) p.push('子ども' + profile.children.length + '人（' + profile.children.map(c => c.age ?? c).join('・') + '歳）');
   if (profile.elderlyMembers?.length) {
     const elStr = profile.elderlyMembers.map(e => `${e.age}歳(${e.relation || '同居'})`).join('・');
     p.push('高齢者' + profile.elderlyMembers.length + '人（' + elStr + '）');
