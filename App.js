@@ -25,6 +25,7 @@ export default function App() {
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
+            headerMode: 'float',
             cardStyle: { backgroundColor: '#FFFFFF' },
             gestureEnabled: true,
           }}

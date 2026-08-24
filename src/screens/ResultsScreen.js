@@ -528,7 +528,7 @@ export default function ResultsScreen({ navigation, route }) {
         </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={true}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={true}>
 
         {viewMode === 'all' ? (
           activeCat === 'all' ? (
@@ -721,6 +721,7 @@ function ServiceCard({ svc, onPress }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
+  scroll: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md, gap: 8 },
   backBtn: { padding: 4 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: font.semibold, color: colors.textPrimary },

@@ -129,7 +129,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={true}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={true}>
 
         <View style={styles.hero}>
           <View style={styles.heroTopRow}>
@@ -396,6 +396,7 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary, overflow: 'hidden' },
+  scroll: { flex: 1 },
   hero: { padding: spacing.lg, paddingBottom: spacing.md },
   heroTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   cityBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.primaryBg, borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 4 },

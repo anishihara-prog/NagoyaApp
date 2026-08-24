@@ -29,7 +29,7 @@ export default function DisasterScreen({ navigation, route }) {
         <Text style={styles.headerTitle}>{district.name}の防災情報</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={true}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={true}>
 
         {/* 区リスクバナー */}
         <View style={styles.riskBanner}>
@@ -192,6 +192,7 @@ export default function DisasterScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bgPrimary },
+  scroll: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', padding: spacing.lg, paddingBottom: spacing.md, gap: 8 },
   backBtn: { padding: 4 },
   headerTitle: { flex: 1, fontSize: 16, fontWeight: font.semibold, color: colors.textPrimary },
