@@ -126,7 +126,7 @@ export const SERVICES = [
     welnet: false, cond: (s) => parseInt(s.age) >= 20 || s.concerns?.includes('health'),
   },
   {
-    id: 16, title: '高齢者インフルエンザ予防接種費用助成', cat: 'health', urgent: false, target: 'adult', grayzone: false,
+    id: 16, title: '高齢者インフルエンザ予防接種費用助成', cat: 'elderly', subcat: 'elderly_care', urgent: false, target: 'adult', grayzone: false,
     desc: '65歳以上を対象にインフルエンザ予防接種費用の一部を助成（自己負担約1,500円）。',
     detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】名古屋市在住の65歳以上\n【費用】自己負担1,500円程度\n【接種時期】毎年10〜12月ごろ\n【接種場所】指定医療機関',
     url: 'https://www.city.nagoya.jp/kenkofukushi/kenkoinfo/1009500/1009599/1009600.html', contact: '各区保健センター',

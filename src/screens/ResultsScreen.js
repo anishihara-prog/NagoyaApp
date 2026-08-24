@@ -88,7 +88,7 @@ export default function ResultsScreen({ navigation, route }) {
       health:             ['health', 'emergency', 'work'],
       mental_health:      ['mental', 'welfare'],
       disability_service: ['welfare', 'work', 'money'],
-      hikikomori_concern: ['welfare', 'health', 'work'],
+      hikikomori_concern: ['welfare', 'health', 'work', 'mental'],
       dv:                 ['welfare', 'housing'],
       disaster:           ['emergency', 'disaster'],
       foreign:            ['welfare'],
@@ -157,12 +157,36 @@ export default function ResultsScreen({ navigation, route }) {
         .sort(byTitle);
       return { key: adult.id ?? idx, idx, age: adult.age, relation: adult.relation, services };
     });
+    // 「本人単独での一致」はchildrenを含めたselfMatchedIdsで判定すると、
+    // 登録した子どもの年齢・状況だけで一致したケース（本人自身は無関係）まで「本人も一致した」と
+    // 誤判定してしまうため、children を除いたプロフィールで改めて判定する。
+    // ProfileScreenが子どもの状況(status)から自動付与するconcerns
+    // （childcare/education/hikikomori_concern/child_disability）も子ども由来のため、
+    // 本人の明示的な選択(explicitConcerns)と、子ども以外の入力から改めて組み直した値を使う
+    // （そのまま残すと、これらのフラグ経由で子ども登録だけの一致まで「本人単独で一致」と
+    // 誤判定してしまう）。
+    const rebuiltSelfConcerns = [...(selfProfile.explicitConcerns || [])];
+    const pushConcern = (c) => { if (!rebuiltSelfConcerns.includes(c)) rebuiltSelfConcerns.push(c); };
+    if ((selfProfile.elderlyMembers?.length > 0) || (parseInt(selfProfile.age) || 0) >= 65) pushConcern('nursing');
+    if (selfProfile.employment === 'unemployed') pushConcern('work');
+    if (selfProfile.employment === 'student') pushConcern('education');
+    if (selfProfile.employment === 'disabled_work') pushConcern('disability_service');
+    if (selfProfile.income === 'low' || selfProfile.income === 'nontax') pushConcern('money');
+    const selfWithoutChildrenProfile = { ...selfProfile, children: [], concerns: rebuiltSelfConcerns };
+    const selfWithoutChildrenIds = new Set(
+      SERVICES.filter(s => { try { return !!s.cond(selfWithoutChildrenProfile); } catch { return false; } }).map(s => s.id)
+    );
+
     // お子さま：1人ごとに、その子だけを持つ仮プロフィールで改めてマッチングし直す
     // （きょうだいの年齢で誤って一致してしまうのを防ぐ。forSelfとの重複除外に使うため、forSelfより先に計算する）
+    // target:'both'の項目（定期予防接種の案内・児童委員・子育て応援サイトなど）は、
+    // 子どもがいることで初めて一致する（＝children除外時にselfWithoutChildrenIdsに含まれない）
+    // ものだけを対象にする。所得・就労状況等、子どもの有無と無関係な理由で本人側も
+    // 元々一致する項目まで子ども向けに紛れ込ませないため。
     const perChild = (profile.children || []).map((child, idx) => {
       const childProfile = { ...profile, children: [child] };
       const services = SERVICES
-        .filter(s => s.target === 'child')
+        .filter(s => s.target === 'child' || (s.target === 'both' && !selfWithoutChildrenIds.has(s.id)))
         .filter(s => showAll || s.cond(childProfile))
         .filter(s => isAgeMatch(s, childProfile))
         .filter(s => showAll || concernMatch(s, profile.explicitConcerns))
@@ -181,19 +205,39 @@ export default function ResultsScreen({ navigation, route }) {
     // target:'child'の項目（高校生等就学支援金など）は本来「子どもを登録した世帯」向けだが、
     // 本人自身が15〜18歳等でcondの本人年齢条件を満たす場合（本人が高校生本人としてアプリを使うケース）
     // は、登録した子ども側で個別に一致しない限り、本人向けとして表示する。
-    // ここでの「本人単独での一致」はchildrenを含めたselfMatchedIdsで判定すると、
-    // 登録した子どもの年齢だけで一致したケース（本人自身は無関係）まで「本人も一致した」と
-    // 誤判定してしまうため、children を除いたプロフィールで改めて判定する。
-    const selfWithoutChildrenIds = new Set(
-      SERVICES.filter(s => { try { return !!s.cond({ ...selfProfile, children: [] }); } catch { return false; } }).map(s => s.id)
-    );
     const childAttributedIds = new Set(
       perChild.flatMap(g => g.services.map(s => s.id)).filter(id => !selfWithoutChildrenIds.has(id))
+    );
+    // cat:'elderly'の項目（高齢者インフルエンザ予防接種費用助成など）は、本人自身が
+    // 65歳以上等で単独でも対象になる場合は「本人向け」に残し、登録した高齢者家族の
+    // 同居のみで一致している場合はその家族側のセクションへ分離する。
+    // elderlyMembersだけでなく、ProfileScreenがelderlyMembers登録時に自動付与する
+    // sit.nursing/sit.elderly/concerns.nursingも高齢者家族由来のため、本人が単独で
+    // 65歳以上の場合の値に作り直した上で判定する（そのまま残すと、これらのフラグ経由で
+    // 高齢者家族登録だけの一致まで「本人単独で一致」と誤判定してしまう）。
+    const myAgeForElderlyCheck = parseInt(selfProfile.age) || 0;
+    const selfAloneQualifiesAsElderly = myAgeForElderlyCheck >= 65;
+    const selfAloneProfile = {
+      ...selfProfile,
+      elderlyMembers: [],
+      sit: [
+        ...(selfProfile.sit || []).filter(x => x !== 'nursing' && x !== 'elderly'),
+        ...(selfAloneQualifiesAsElderly ? ['nursing', 'elderly'] : []),
+      ],
+      concerns: [
+        ...(selfProfile.concerns || []).filter(x => x !== 'nursing'),
+        ...(selfAloneQualifiesAsElderly ? ['nursing'] : []),
+      ],
+    };
+    const selfWithoutElderlyIds = new Set(
+      SERVICES.filter(s => { try { return !!s.cond(selfAloneProfile); } catch { return false; } })
+        .filter(s => isAgeMatch(s, selfAloneProfile))
+        .map(s => s.id)
     );
 
     // 本人向け：世帯全体向けサービス（高齢者向け・成人家族固有・子ども固有の項目は個別セクションへ分離）
     const forSelf = valid
-      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && s.cat !== 'elderly' && !adultAttributedIds.has(s.id) && !childAttributedIds.has(s.id) && (s.target === 'adult' || s.target === 'both' || !s.target || s.target === 'child'))
+      .filter(s => s.cat !== 'emergency' && s.cat !== 'disaster' && (s.cat !== 'elderly' || selfWithoutElderlyIds.has(s.id)) && !adultAttributedIds.has(s.id) && !childAttributedIds.has(s.id) && (s.target === 'adult' || s.target === 'both' || !s.target || s.target === 'child'))
       .sort(byCat);
 
     // 高齢者：1人ごとに、その方だけを持つ仮プロフィールで改めてマッチングし直す

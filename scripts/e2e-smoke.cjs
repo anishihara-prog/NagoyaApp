@@ -147,6 +147,7 @@ async function main() {
     const selfBlockText = body.slice(selfBlockStart, adultBlockStart > selfBlockStart ? adultBlockStart : body.length);
     const adultBlockText = body.slice(adultBlockStart);
     record('ひきこもり状態の成人家族（15〜49歳）向けになごや若者サポートステーションが出る', adultBlockText.includes('なごや若者サポートステーション'));
+    record('ひきこもり状態の成人家族向けに名古屋市精神保健福祉センターここらぼが出る（cat:mentalがconcernMatchで除外されていた不具合の回帰確認）', adultBlockText.includes('ここらぼ'));
     record('本人向けサービスに成人家族のひきこもり情報が漏れていない（過去バグの回帰確認）', !selfBlockText.includes('なごや若者サポートステーション') && !selfBlockText.includes('まえジョブ'));
     record('本人（50歳）に本来関係ある特定健康診査が消えていない（成人家族登録による過剰除外の回帰確認）', selfBlockText.includes('特定健康診査'));
 
@@ -509,6 +510,16 @@ async function main() {
     await page.waitForTimeout(2000);
     const body1 = await page.locator('body').innerText();
     record('本人50歳＋高齢者家族登録で高齢者インフルエンザ予防接種費用助成が出る', body1.includes('高齢者インフルエンザ予防接種費用助成'));
+    // 高齢者家族の同居のみで一致した場合は「本人向け」ではなく、その家族向けの見出し配下に
+    // 出るべき（ふれあい給食サービス等、他の高齢者向け項目と同じ扱いになっているかの回帰確認）
+    const selfHeadingIdx1 = body1.indexOf('本人向けサービス');
+    const elderlyHeadingIdx1 = body1.indexOf('高齢者1人目（75歳）向けサービス');
+    const influenzaIdx1 = body1.indexOf('高齢者インフルエンザ予防接種費用助成');
+    const influenzaInSelfSection1 = selfHeadingIdx1 !== -1 && influenzaIdx1 > selfHeadingIdx1 && influenzaIdx1 < elderlyHeadingIdx1;
+    record(
+      '本人50歳＋高齢者家族登録で高齢者インフルエンザ予防接種費用助成が「本人向け」に紛れ込んでいない',
+      elderlyHeadingIdx1 !== -1 && influenzaIdx1 > elderlyHeadingIdx1 && !influenzaInSelfSection1
+    );
 
     record('この一連の操作でエラーなし', errors.length === 0, errors.join(' / '));
   });
@@ -536,6 +547,19 @@ async function main() {
     await page.locator('input[placeholder="歳"]').first().fill('3');
     await page.getByText('サービスを検索する', { exact: true }).click();
     await page.waitForTimeout(1500);
+
+    // 「子どもがいること」自体で世帯向けにマッチするtarget:'both'項目（児童委員・子育て応援サイト・
+    // 子ども食堂一覧）が「本人向け」ではなく「1人目のお子さま」向けに出ることの回帰確認
+    const bodyBeforeByPerson = await page.locator('body').innerText();
+    const selfHeadingIdxC = bodyBeforeByPerson.indexOf('本人向けサービス');
+    const childHeadingIdxC = bodyBeforeByPerson.indexOf('1人目のお子さま（3歳）向けサービス');
+    record('3歳の子がいる世帯で「1人目のお子さま」向けの見出しが出る', childHeadingIdxC !== -1);
+    ['児童委員・主任児童委員', '名古屋市子育て応援サイト', '名古屋市内の子ども食堂一覧', '定期予防接種・乳幼児健診の案内'].forEach(title => {
+      const idx = bodyBeforeByPerson.indexOf(title);
+      const inSelfSection = selfHeadingIdxC !== -1 && idx > selfHeadingIdxC && (childHeadingIdxC === -1 || idx < childHeadingIdxC);
+      record(`「${title}」が「本人向け」ではなく「1人目のお子さま」向けに出る`, idx !== -1 && childHeadingIdxC !== -1 && idx > childHeadingIdxC && !inSelfSection);
+    });
+
     await page.getByText('人ごとに見る', { exact: true }).click();
     await page.waitForTimeout(800);
     await page.getByText('防災情報', { exact: true }).click();
