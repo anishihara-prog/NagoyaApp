@@ -135,7 +135,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.heroTopRow}>
             <View style={styles.cityBadge}>
               <Ionicons name="business-outline" size={12} color={colors.primary} />
-              <Text style={styles.cityBadgeTxt}>名古屋市 公式サービス検索</Text>
+              <Text style={styles.cityBadgeTxt}>名古屋市 サービス検索</Text>
             </View>
             <TouchableOpacity style={styles.clearBtn} onPress={clearAll} activeOpacity={0.7}>
               <Ionicons name="refresh-outline" size={13} color={colors.textSecondary} />
@@ -388,6 +388,11 @@ export default function ProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.footer}>
+          <Text style={styles.footerTxt}>Produce by kitakukikan</Text>
+          <Text style={styles.footerTxt}>mail：kikansoudan@wappa-no-kai.jp</Text>
+        </View>
+
         <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
@@ -431,4 +436,6 @@ const styles = StyleSheet.create({
   ctaWrap: { padding: spacing.lg, paddingTop: spacing.md },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.primaryBg, borderRadius: radius.lg, paddingVertical: 15, borderWidth: 0.5, borderColor: colors.primaryLight },
   ctaTxt: { fontSize: 15, fontWeight: font.semibold, color: colors.primary },
+  footer: { alignItems: 'center', paddingTop: spacing.md },
+  footerTxt: { fontSize: 11, color: colors.textSecondary },
 });
