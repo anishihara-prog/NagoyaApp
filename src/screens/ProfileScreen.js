@@ -389,8 +389,8 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerTxt}>Produce by kitakukikan</Text>
-          <Text style={styles.footerTxt}>mail：kikansoudan@wappa-no-kai.jp</Text>
+          <Text style={styles.footerTxt}>Produce by a.nishihara</Text>
+          <Text style={styles.footerTxt}>mail：a.nishihara@wappa-no-kai.jp</Text>
         </View>
 
         <View style={{ height: 32 }} />
