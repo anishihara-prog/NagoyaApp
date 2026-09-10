@@ -48,6 +48,25 @@ checks.push({
   },
 });
 
+// id126で発見: detail の【対象】に「〜のみの世帯」と書いてあるのに、
+// cond が世帯構成（living 等）を全く見ておらず、同居家族の1人が該当するだけで
+// 世帯全員が該当しなくてもマッチしてしまうケース
+checks.push({
+  name: 'detailが「のみの世帯」を対象とするのにcondが世帯構成(living)を見ていない項目',
+  run(services) {
+    const findings = [];
+    for (const s of services) {
+      const detail = `${s.detail || ''}${s.desc || ''}`;
+      if (!/のみの?世帯/.test(detail)) continue;
+      const src = s.cond.toString();
+      if (!src.includes('living')) {
+        findings.push({ id: s.id, title: s.title, cond: src });
+      }
+    }
+    return findings;
+  },
+});
+
 let totalFindings = 0;
 console.log(`SERVICES: ${SERVICES.length}件\n`);
 for (const check of checks) {
