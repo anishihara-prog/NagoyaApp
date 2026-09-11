@@ -237,7 +237,7 @@ export const SERVICES = [
     desc: '身体・知的・精神障害者のみの世帯等に、1日1食・週7回を限度に配食し、あわせて安否確認を行います。',
     detail: '【対象】市内在住で、身体障害者・知的障害者・精神障害者・難病患者のみの世帯またはこれに準ずる世帯（介護保険の生活援助型・自立支援型対象者は除く）\n【内容】1人あたり週7回を限度に1日1食を配食。配食時にあわせて安否確認を実施\n【費用】1回あたり利用者負担200円（うち助成180円）※食事代は別途全額利用者負担\n【利用方法】お住まいの区の障害者基幹相談支援センターへ利用申込書を提出→食のアセスメント→配食サービス利用証交付後、指定事業者と契約（原則1か月1事業者）',
     url: 'https://www.kaigo-wel.city.nagoya.jp/view/wel/service/othersystems/haishoku.html', contact: '各区 障害者基幹相談支援センター',
-    welnet: false, cond: (s) => s.living === 'alone' && (s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental')),
+    welnet: false, cond: (s) => (s.living === 'alone' || (!(s.adultMembers?.length > 0) && !(s.elderlyMembers?.length > 0))) && (s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental')),
     extraLinks: [{ url: 'https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016662/1016664.html', label: '障害者基幹相談支援センター一覧' }],
   },
   {
