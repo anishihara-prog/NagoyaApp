@@ -196,6 +196,15 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
           <View style={styles.field}>
+            <Text style={styles.lbl}>障害・困難がある方（ご本人）</Text>
+            <Text style={styles.secNote}>ご本人にあてはまるものを選択（同居のご家族の分は下の「同居する成人家族の情報」で入力してください）</Text>
+            <View style={styles.trow}>
+              {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['未診断で障害の疑いあり','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
+                <TB key={v} label={l} active={disabledMembers.includes(v)} onPress={() => togDisabled(v)} style={styles.tAuto} />
+              ))}
+            </View>
+          </View>
+          <View style={styles.field}>
             <Text style={styles.lbl}>住まいの種類</Text>
             <View style={styles.trow}>
               {[['持ち家（戸建て）','owned_house'],['持ち家（マンション）','owned_apt'],['民間賃貸','rental'],['公営住宅','public'],['社宅・寮','company'],['その他・不安定','other_housing']].map(([l,v]) => (
@@ -320,7 +329,7 @@ export default function ProfileScreen({ navigation }) {
               <View style={styles.field}>
                 <Text style={styles.lbl}>障害・困難</Text>
                 <View style={styles.trow}>
-                  {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['発達障害の疑い\n（診断なし）','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
+                  {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['未診断で障害の疑いあり','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
                     <TB key={v} label={l} active={a.tags.includes(v)} onPress={() => togAdultTag(a.id,v)} style={styles.tAuto} />
                   ))}
                 </View>
@@ -331,17 +340,6 @@ export default function ProfileScreen({ navigation }) {
             <Ionicons name="add-circle-outline" size={18} color={colors.textSecondary} />
             <Text style={styles.addBtnTxt}>成人家族を追加</Text>
           </TouchableOpacity>
-        </Sec>
-
-        <View style={styles.div} />
-
-        {/* ── 障害・困難 ── */}
-        <Sec icon="accessibility-outline" title="障害・困難がある方" note="ご本人にあてはまるものを選択（同居のご家族の分は上の「同居する成人家族の情報」で入力してください）">
-          <View style={styles.trow}>
-            {[['身体障害（手帳あり）','disabled'],['知的障害（療育手帳）','intellectual'],['精神障害（手帳あり）','mental'],['発達障害の疑い\n（診断なし）','gray'],['ひきこもり・\n不登校','hikikomori']].map(([l,v]) => (
-              <TB key={v} label={l} active={disabledMembers.includes(v)} onPress={() => togDisabled(v)} style={styles.tAuto} />
-            ))}
-          </View>
         </Sec>
 
         <View style={styles.div} />

@@ -17,7 +17,7 @@ const AGE_ONLY = ['14', '16', '18', '20', '25', '39', '40', '49', '59', '60', '6
 // DISABLED_LABEL/ADULT_TAG_LABEL は見やすさのため改行を除いた表記だが、
 // 実際の画面（ProfileScreen.js）ではボタンラベルに改行が入っているため、
 // Playwright操作（getByText exact）にはこちらの実表記を使う。
-const UI_CLICK_LABEL = { ...DISABLED_LABEL, gray: '発達障害の疑い\n（診断なし）', hikikomori: 'ひきこもり・\n不登校' };
+const UI_CLICK_LABEL = { ...DISABLED_LABEL, hikikomori: 'ひきこもり・\n不登校' };
 
 function candidate(desc, fields, uiActions) {
   return { desc, fields, uiActions };

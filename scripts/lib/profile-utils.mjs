@@ -114,7 +114,7 @@ export const INCOME_LABEL = {
 };
 export const DISABLED_LABEL = {
   disabled: '身体障害（手帳あり）', intellectual: '知的障害（療育手帳）', mental: '精神障害（手帳あり）',
-  gray: '発達障害の疑い（診断なし）', hikikomori: 'ひきこもり・不登校',
+  gray: '未診断で障害の疑いあり', hikikomori: 'ひきこもり・不登校',
 };
 export const ADULT_TAG_LABEL = DISABLED_LABEL;
 export const ADULT_RELATION_LABEL = { sibling: '兄弟姉妹', spouse: '配偶者', adult_child: '成人の子', other: 'その他' };
