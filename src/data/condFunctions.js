@@ -102,7 +102,7 @@ export const COND_FUNCTIONS = {
   98: (s) => s.concerns?.includes('waste') || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)),
   99: (s) => s.concerns?.includes('transport') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('disabled'),
   100: (s) => s.concerns?.includes('pet'),
-  126: (s) => (s.living === 'alone' || (!(s.adultMembers?.length > 0) && !(s.elderlyMembers?.length > 0))) && (s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental')),
+  126: (s) => s.living === 'alone' && (s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental')),
   134: (s) => s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('hikikomori_concern') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 49) || ((parseInt(s.age) >= 15 && parseInt(s.age) <= 49) && (s.employment === 'unemployed' || s.concerns?.includes('work'))),
   135: (s) => (parseInt(s.age) >= 15 && parseInt(s.age) <= 49 && (s.employment === 'unemployed' || s.concerns?.includes('work'))) || s.disabledMembers?.includes('hikikomori') || s.adultMembers?.some(a => a.tags?.includes('hikikomori') && parseInt(a.age) >= 15 && parseInt(a.age) <= 49),
   136: (s) => s.concerns?.includes('tax') || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('disabled') || s.marital === 'div' || s.marital === 'widow' || s.marital === 'single' || s.elderlyMembers?.length > 0,
