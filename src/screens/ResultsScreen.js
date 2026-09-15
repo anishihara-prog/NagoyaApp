@@ -660,10 +660,6 @@ export default function ResultsScreen({ navigation, route }) {
           </View>
         )}
 
-        <Text style={styles.disclaimerText}>
-          ※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所・基幹相談支援センター等でご確認ください。
-        </Text>
-
         <View style={{ height: 100 }} />
       </ScrollView>
 
@@ -789,7 +785,6 @@ const styles = StyleSheet.create({
   cardLink: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
   empty: { alignItems: 'center', paddingVertical: 48, gap: 12 },
   emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
-  disclaimerText: { fontSize: 11, color: colors.textTertiary, textAlign: 'center', lineHeight: 16, marginTop: 20, paddingHorizontal: 12 },
   ageBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E3F0FB', borderRadius: radius.full, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, marginBottom: 7 },
   ageBadgeText: { fontSize: 10, color: '#1565C0', fontWeight: font.medium },
   fabWrap: { position: 'absolute', bottom: 20, right: 16, gap: 8, alignItems: 'flex-end' },

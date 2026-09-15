@@ -144,6 +144,7 @@ export default function ProfileScreen({ navigation }) {
           </View>
           <Text style={styles.heroTitle}>あなたの世帯に合った{'\n'}サービスを探す</Text>
           <Text style={styles.heroSub}>詳しく入力するほど、あなたに合ったサービスが絞り込まれます。</Text>
+          <Text style={styles.heroDisclaimer}>※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所・基幹相談支援センター等でご確認ください。</Text>
         </View>
 
         {/* ── お住まいの区 ── */}
@@ -408,6 +409,7 @@ const styles = StyleSheet.create({
   cityBadgeTxt: { fontSize: 11, fontWeight: font.medium, color: colors.primary },
   heroTitle: { fontSize: 20, fontWeight: font.semibold, color: colors.textPrimary, lineHeight: 28, marginBottom: 6 },
   heroSub: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  heroDisclaimer: { fontSize: 11, color: colors.textTertiary, lineHeight: 16, marginTop: 8 },
   block: { padding: spacing.lg, paddingBottom: spacing.md },
   secHdr: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   secTitle: { fontSize: 14, fontWeight: font.semibold, color: colors.textPrimary },
