@@ -144,7 +144,7 @@ export default function ProfileScreen({ navigation }) {
           </View>
           <Text style={styles.heroTitle}>あなたの世帯に合った{'\n'}サービスを探す</Text>
           <Text style={styles.heroSub}>詳しく入力するほど、あなたに合ったサービスが絞り込まれます。</Text>
-          <Text style={styles.heroDisclaimer}>※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所・基幹相談支援センター等でご確認ください。</Text>
+          <Text style={styles.heroDisclaimer}>※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所等でご確認ください。</Text>
         </View>
 
         {/* ── お住まいの区 ── */}
