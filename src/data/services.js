@@ -432,11 +432,11 @@ export const SERVICES = [
   },
   {
     id: 53, title: '名古屋市高齢者就業支援センター', cat: 'work', urgent: false, target: 'adult', grayzone: false,
-    desc: '60歳以上の方の就業相談・職業紹介・技能講習を行う市の就業支援機関。',
-    detail: '【対象年齢】本人60歳以上 / 高齢者同居\n【対象】概ね60歳以上の名古屋市民\n【内容】就業相談・職業紹介・技能講習・就業情報の提供\n【場所】昭和区御器所通3丁目12-1 御器所ステーションビル4・5階\n【受付】月〜金（休日、年末年始を除く）9:00〜20:45\n【就業相談コーナー】センター内に設置された相談窓口。就業に関する相談を実施\n【費用】無料',
-    url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016484/1016488.html', contact: '高齢者就業支援センター（052-842-4691）／就業相談コーナー（052-842-4692）',
-    hours: 'センター本体：月〜金 9:00〜20:45（休日、年末年始を除く）\n就業相談コーナー：月〜金 9:00〜17:00（休日を除く）',
-    welnet: false, cond: (s) => parseInt(s.age) >= 60,
+    desc: '55歳以上の方の就業相談・職業紹介・技能講習を行う市の就業支援機関。',
+    detail: '【対象年齢】本人55歳以上 / 高齢者同居\n【対象】概ね55歳以上の名古屋市民\n【内容】就業相談・職業紹介・技能講習・就業情報の提供\n【場所】昭和区御器所通3丁目12-1 御器所ステーションビル4・5階\n【受付】月〜金（休日、年末年始を除く）9:00〜20:45\n【就業相談コーナー】センター内に設置された相談窓口。就業に関する相談を実施\n【費用】無料',
+    url: 'https://www.city.nagoya.jp/kenkofukushi/koureisha/1016484/1016488.html', contact: '高齢者就業支援センター（052-842-4691）／就業相談コーナー（052-842-4692）／シニアサポートセンター（052-846-6730）',
+    hours: 'センター本体：月〜金 9:00〜20:45（休日、年末年始を除く）\n就業相談コーナー：月〜金 9:30〜12:00・13:00〜17:00（休日を除く）',
+    welnet: false, cond: (s) => parseInt(s.age) >= 55,
     extraLinks: [{ url: 'https://www.bes-c.com/', label: '名古屋市高齢者就業支援センター' }],
   },
   {
@@ -1144,7 +1144,7 @@ export const SERVICES = [
     cond: (s) => s.concerns?.includes('health') || s.concerns?.includes('mental_health') || s.concerns?.includes('pregnant') || s.concerns?.includes('infertility'),
   },
   {
-    id: 152, title: '高齢者肺炎球菌(定期予防接種)', cat: 'health', urgent: false, target: 'adult', grayzone: false,
+    id: 152, title: '高齢者肺炎球菌予防接種(定期予防接種)', cat: 'health', urgent: false, target: 'adult', grayzone: false,
     desc: '65歳以上等を対象に肺炎球菌ワクチン（プレベナー20）を自己負担5,600円で接種できる定期予防接種。',
     detail: '【対象年齢】本人65歳以上 / 高齢者同居\n【対象】名古屋市に住民登録があり、接種日に満65歳の方、または満60〜64歳で心臓・腎臓・呼吸器機能障害等（身体障害者手帳1級相当）がある方で、過去に肺炎球菌ワクチンを接種したことがない方\n【内容】プレベナー20（20価結合型ワクチン）を接種（令和8年4月からニューモバックスより変更）\n【費用】自己負担5,600円（生活保護世帯・市民税非課税世帯・中国残留邦人等支援給付受給者は免除）\n【接種場所】市内指定医療機関（要予約の場合あり）',
     url: 'https://www.city.nagoya.jp/kenkofukushi/kenkoinfo/1009500/1009501/1009525/1009528.html',

@@ -54,7 +54,7 @@ export const COND_FUNCTIONS = {
   50: (s) => s.elderlyMembers?.length > 0,
   51: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.some(m => parseInt(m.age) >= 65 || ['s1','s2','c1','c2','c3','c4','c5'].includes(m.careLevel)) || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('elderly') || s.sit?.includes('disabled') || s.sit?.includes('nursing'),
   52: (s) => s.elderlyMembers?.length > 0 && s.living === 'alone',
-  53: (s) => parseInt(s.age) >= 60,
+  53: (s) => parseInt(s.age) >= 55,
   54: (s) => parseInt(s.age) >= 65 || s.elderlyMembers?.length > 0 || s.disabledMembers?.some(t => ['disabled', 'intellectual', 'mental'].includes(t)) || s.sit?.includes('elderly') || s.sit?.includes('disabled'),
   55: (_) => true,
   56: (s) => s.children.length > 0,
