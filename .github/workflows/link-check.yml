@@ -2,11 +2,31 @@ name: 名古屋市HPリンク切れ・内容変更検知
 
 on:
   schedule:
-    - cron: '0 1 * * 1'  # 毎週月曜 10:00 JST (= UTC 01:00)
+    - cron: '0 1 * * 1'  # 毎週月曜 10:00 JST (= UTC 01:00) ※隔週判定で実質2週間に1回に間引く
   workflow_dispatch:
 
 jobs:
+  # cronは「N週間ごと」を直接指定できないため、毎週トリガーした上で
+  # ISO週番号の偶奇で判定し、2週間に1回だけ本処理を実行する
+  schedule-gate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: 隔週判定（ISO週番号が偶数の週のみ実行）
+        id: check
+        run: |
+          WEEK=$(TZ=Asia/Tokyo date +%V)
+          if [ $((10#$WEEK % 2)) -eq 0 ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   check-links:
+    needs: [schedule-gate]
+    if: always() && (github.event_name != 'schedule' || needs.schedule-gate.outputs.should_run == 'true')
     runs-on: ubuntu-latest
     permissions:
       issues: write
