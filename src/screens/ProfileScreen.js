@@ -242,7 +242,7 @@ export default function ProfileScreen({ navigation }) {
               <View style={styles.field}>
                 <Text style={styles.lbl}>状況</Text>
                 <View style={styles.trow}>
-                  {[['保育所・幼稚園通園中','nursery'],['小学生','elementary'],['中学生','junior'],['高校生','high'],['不登校・登校しぶり','futoko'],['障害・発達支援中','special'],['未就園','none_school']].map(([l,v]) => (
+                  {[['保育所・幼稚園通園中','nursery'],['小学生','elementary'],['中学生','junior'],['高校生','high'],['小中高で不登校','futoko'],['障害をお持ちの方','special'],['未就園','none_school']].map(([l,v]) => (
                     <TB key={v} label={l} active={c.status===v} onPress={() => updateChild(c.id,'status',c.status===v?'':v)} style={styles.tAuto} />
                   ))}
                 </View>

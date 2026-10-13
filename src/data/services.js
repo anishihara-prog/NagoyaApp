@@ -956,7 +956,7 @@ export const SERVICES = [
     desc: '障害者手帳がなくても、働きづらさを抱える方が利用できる名古屋市の就労支援プログラム。',
     detail: '【対象】名古屋市在住で、働く意思がありながら働きづらさを感じている方（障害者手帳・障害福祉サービス受給者証をお持ちでない方）\n【内容】個別のニーズに応じた就労経験・トレーニング等のサポート\n【費用】相談・就労支援サービスは無料（交通費は自己負担）\n【実施】公益財団法人日本財団の就労支援プログラムを名古屋市が補助',
     url: 'https://www.city.nagoya.jp/kurashi/shigoto/1016699/1050641.html', contact: '一般社団法人愛知県就労促進協会　052-321-2680',
-    welnet: false, cond: (s) => s.disabledMembers?.includes('gray') || s.concerns?.includes('work') || s.employment === 'unemployed' || s.employment === 'disabled_work',
+    welnet: false, cond: (s) => s.disabledMembers?.includes('gray') || s.disabledMembers?.includes('hikikomori') || s.concerns?.includes('work') || s.concerns?.includes('hikikomori_concern') || s.employment === 'unemployed' || s.employment === 'disabled_work' || s.adultMembers?.some(a => a.tags?.includes('hikikomori')),
   },
   {
     id: 133, title: '若者・企業リンクサポート事業', cat: 'work', urgent: false, target: 'both', grayzone: true,

@@ -459,7 +459,7 @@ async function main() {
     await page.getByText('子どもを追加', { exact: true }).click();
     await page.waitForTimeout(300);
     await page.locator('input[placeholder="歳"]').first().fill('17');
-    await page.getByText('不登校・登校しぶり', { exact: true }).click();
+    await page.getByText('小中高で不登校', { exact: true }).click();
     await page.getByText('サービスを検索する', { exact: true }).click();
     await page.waitForTimeout(2000);
     const body1 = await page.locator('body').innerText();
@@ -475,7 +475,7 @@ async function main() {
     await page.getByText('子どもを追加', { exact: true }).click();
     await page.waitForTimeout(300);
     await page.locator('input[placeholder="歳"]').first().fill('13');
-    await page.getByText('不登校・登校しぶり', { exact: true }).click();
+    await page.getByText('小中高で不登校', { exact: true }).click();
     await page.getByText('サービスを検索する', { exact: true }).click();
     await page.waitForTimeout(2000);
     const body2 = await page.locator('body').innerText();

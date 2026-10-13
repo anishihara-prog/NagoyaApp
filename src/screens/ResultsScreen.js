@@ -1,11 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius, font } from '../theme';
-import { SERVICES, CAT_LABELS, CAT_COLORS, SUBCAT_LABELS } from '../data/services';
+import { DISTRICTS } from '../data/districts';
+import { CAT_COLORS, CAT_LABELS, SERVICES, SUBCAT_LABELS } from '../data/services';
+import { colors, font, radius, spacing } from '../theme';
 
 // 【対象】行から年齢・対象者情報を抽出
 function getAgeLabel(detail) {
@@ -17,6 +22,13 @@ function getAgeLabel(detail) {
 }
 
 const CATS = ['all', 'emergency', 'disaster', 'child', 'health', 'mental', 'welfare', 'housing', 'work', 'money', 'elderly', 'admin'];
+const DRILL_ORDER = [
+  'emergency', 'disaster',
+  'child_care', 'child_newborn', 'child_consult', 'child_other',
+  'health', 'mental', 'welfare', 'housing', 'work', 'money',
+  'elderly_consult', 'elderly_care', 'elderly_money', 'elderly_rights',
+  'admin',
+];
 
 // 高齢者グループ（perElderly）の見出しラベルを「続柄（年齢）」の形で生成
 const RELATION_LABELS = { self: '本人', parent: '親', grand: '祖父母', spouse: '配偶者', other: 'その他' };
@@ -253,7 +265,7 @@ export default function ResultsScreen({ navigation, route }) {
     });
 
     return { emergency, disaster, forSelf, perChild, perElderly, perAdult };
-  }, [matched, profile, showAll]);
+  }, [matched, profile, selfProfile, showAll]);
 
   // 「人ごとに見る」モード用：救急医療・防災・本人・子ども・高齢者を1つのリストにまとめる（0件は除く）
   const people = useMemo(() => {
@@ -298,22 +310,15 @@ export default function ResultsScreen({ navigation, route }) {
   }, [categorized, profile.district]);
 
   // 選択中の人のサービスをカテゴリ別（高齢者・子育ては件数が多いためサブカテゴリ別）に集計
-  const DRILL_ORDER = [
-    'emergency', 'disaster',
-    'child_care', 'child_newborn', 'child_consult', 'child_other',
-    'health', 'mental', 'welfare', 'housing', 'work', 'money',
-    'elderly_consult', 'elderly_care', 'elderly_money', 'elderly_rights',
-    'admin',
-  ];
-  const categorizeByCat = (services) => {
+  const categorizeByCat = useCallback((services) => {
     const map = {};
     services.forEach(s => { const key = s.subcat || s.cat; (map[key] ||= []).push(s); });
     return DRILL_ORDER.filter(k => map[k]).map(k => ({ cat: k, label: CAT_LABELS[k] || SUBCAT_LABELS[k], services: map[k] }));
-  };
+  }, []);
 
   const drillPersonCats = useMemo(
     () => drillPerson ? categorizeByCat(drillPerson.services) : [],
-    [drillPerson]
+    [drillPerson, categorizeByCat]
   );
 
   // 救急医療・防災のように人のラベル自体がカテゴリ名と同じ場合は重複表示しない
@@ -616,11 +621,28 @@ export default function ResultsScreen({ navigation, route }) {
           ) : (
             // カテゴリフィルター表示
             <View style={styles.list}>
+              {/* 防災カテゴリ：選択中の区の防災情報（ハザードマップ・避難所等）への導線 */}
+              {activeCat === 'disaster' && profile.district && DISTRICTS[profile.district] && (
+                <TouchableOpacity
+                  style={styles.disasterInfoCard}
+                  onPress={() => navigation.navigate('Disaster', { districtKey: profile.district, profile })}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="alert-circle" size={22} color="#B71C1C" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.disasterInfoTitle}>{DISTRICTS[profile.district].name}の防災情報</Text>
+                    <Text style={styles.disasterInfoDesc}>区の災害リスク・ハザードマップ・避難所を確認</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+                </TouchableOpacity>
+              )}
               {filtered.length === 0 ? (
-                <View style={styles.empty}>
-                  <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
-                  <Text style={styles.emptyText}>このカテゴリに該当するサービスは{'\n'}見つかりませんでした</Text>
-                </View>
+                (activeCat === 'disaster' && profile.district && DISTRICTS[profile.district]) ? null : (
+                  <View style={styles.empty}>
+                    <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
+                    <Text style={styles.emptyText}>このカテゴリに該当するサービスは{'\n'}見つかりませんでした</Text>
+                  </View>
+                )
               ) : (
                 filtered.map(svc => (
                   <ServiceCard key={svc.id} svc={svc} onPress={() => navigation.navigate('Detail', { svcId: svc.id })} />
@@ -783,6 +805,9 @@ const styles = StyleSheet.create({
   cardMetaText: { fontSize: 11, color: colors.textTertiary, flex: 1 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
   cardLink: { fontSize: 12, color: colors.accent, fontWeight: font.medium },
+  disasterInfoCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFF3E0', borderWidth: 0.5, borderColor: '#FFCC80', borderRadius: radius.lg, padding: 14, marginBottom: 4 },
+  disasterInfoTitle: { fontSize: 14, fontWeight: font.semibold, color: '#E65100', marginBottom: 2 },
+  disasterInfoDesc: { fontSize: 12, color: colors.textSecondary, lineHeight: 17 },
   empty: { alignItems: 'center', paddingVertical: 48, gap: 12 },
   emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   ageBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E3F0FB', borderRadius: radius.full, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, marginBottom: 7 },

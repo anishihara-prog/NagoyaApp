@@ -130,7 +130,7 @@ export const CONCERN_LABEL = {
 };
 export const CHILD_STATUS_LABEL = {
   nursery: '保育所・幼稚園通園中', elementary: '小学生', junior: '中学生', high: '高校生',
-  futoko: '不登校・登校しぶり', special: '障害・発達支援中', none_school: '未就園',
+  futoko: '小中高で不登校', special: '障害をお持ちの方', none_school: '未就園',
 };
 export const ELDERLY_RELATION_LABEL = { self: '本人', parent: '親', grand: '祖父母', spouse: '配偶者', other: 'その他' };
 export const ELDERLY_CARE_LEVEL_LABEL = {

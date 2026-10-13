@@ -9,9 +9,19 @@
 
 import { SERVICES } from '../src/data/services.js';
 import {
-  buildProfile, extractAgeThresholds, computeBoundaryAges,
-  MARITAL_VALUES, EMPLOYMENT_VALUES, INCOME_VALUES, GENDER_VALUES, DISABLED_TAGS, CONCERN_TAGS,
-  CHILD_STATUSES, CHILD_STATUS_AGE, ELDERLY_RELATIONS, ELDERLY_CARE_LEVELS,
+    buildProfile,
+    CHILD_STATUS_AGE,
+    CHILD_STATUSES,
+    computeBoundaryAges,
+    CONCERN_TAGS,
+    DISABLED_TAGS,
+    ELDERLY_CARE_LEVELS,
+    ELDERLY_RELATIONS,
+    EMPLOYMENT_VALUES,
+    extractAgeThresholds,
+    GENDER_VALUES,
+    INCOME_VALUES,
+    MARITAL_VALUES,
 } from './lib/profile-utils.mjs';
 
 const VERBOSE = process.argv.includes('--verbose');
@@ -99,22 +109,45 @@ function extractAgeClauses(detail) {
 function isConsistent(clause, profile) {
   const selfAge = parseInt(profile.age);
   const hasSelfAge = !Number.isNaN(selfAge);
-  const elderlyInRange = () => profile.elderlyMembers?.some(e => parseInt(e.age) >= clause.min && parseInt(e.age) <= clause.max);
+  const elderlyInRange = () => profile.elderlyMembers?.some(e => {
+    const age = parseInt(e.age);
+    if (Number.isNaN(age)) return false;
+    return age >= clause.min && age <= clause.max;
+  });
+  const childInRange = () => profile.children?.some(c => {
+    const age = parseInt(c.age);
+    if (Number.isNaN(age)) return false;
+    return age >= clause.min && age <= clause.max;
+  });
 
   if (clause.subject === '子ども') {
-    if (!profile.children?.length) return null; // 子ども登録なしなら判定対象外
-    return profile.children.some(c => c.age >= clause.min && c.age <= clause.max);
+    if (!profile.children?.length) return null;
+    return childInRange();
   }
   if (clause.subject === '高齢者') {
-    if (!profile.elderlyMembers?.length) return null;
-    return elderlyInRange();
+    if (!profile.elderlyMembers?.length && !hasSelfAge) return null;
+    return elderlyInRange() || (hasSelfAge && selfAge >= clause.min && selfAge <= clause.max);
   }
-  // 本人：この文言は「登録済みの高齢者家族本人」を指すケースが多い
-  // （例：本人65歳以上／家族に65歳以上がいれば対象、という cond 設計と対応）ため、
-  // 本人の年齢が範囲外でも、登録済み高齢者家族が範囲内ならOKとみなす
+
+  // 各種サービスは「本人」だけでなく、子ども・高齢者・家族の条件が混在することが多い。
+  // そのため 1 つの detail に複数の年齢句がある場合は、いずれか一つでも満たせば
+  // 「不整合」とは見なさず、全ての明示句が外れて初めて要目視の対象にする。
   if (profile.elderlyMembers?.length && elderlyInRange()) return true;
-  if (!hasSelfAge) return null; // 年齢未入力・高齢者家族もなしは判定対象外
+  if (profile.children?.length && childInRange()) return true;
+  if (!hasSelfAge) return null;
   return selfAge >= clause.min && selfAge <= clause.max;
+}
+
+function matchesWithoutAge(service, profile) {
+  const neutralProfile = {
+    ...profile,
+    age: undefined,
+  };
+  try {
+    return !!service.cond(neutralProfile);
+  } catch {
+    return false;
+  }
 }
 
 // ── 実行 ────────────────────────────────────────────────
@@ -137,11 +170,27 @@ for (const { name, profile: base } of personas) {
 
   for (const svc of matched) {
     const clauses = extractAgeClauses(svc.detail);
-    for (const clause of clauses) {
-      const consistent = isConsistent(clause, profile);
-      if (consistent === false) {
-        suspicious.push({ persona: name, id: svc.id, title: svc.title, clause: clause.raw, profileAge: profile.age });
-      }
+    if (!clauses.length) continue;
+
+    // 年齢条件だけでマッチしているサービスのみを要目視対象にする。
+    // 子ども・高齢者・障害者・学生等の非年齢条件でマッチした場合は、
+    // 「本人の年齢不整合」ではなく対象別の支援要件として扱う。
+    if (matchesWithoutAge(svc, profile)) continue;
+
+    const results = clauses.map(clause => isConsistent(clause, profile));
+    const allNotApplicable = results.every(r => r === null);
+    if (allNotApplicable) continue;
+
+    const anyConsistentClause = results.some(r => r === true);
+    if (!anyConsistentClause) {
+      const firstClause = clauses[0];
+      suspicious.push({
+        persona: name,
+        id: svc.id,
+        title: svc.title,
+        clause: firstClause.raw,
+        profileAge: profile.age,
+      });
     }
   }
 }
