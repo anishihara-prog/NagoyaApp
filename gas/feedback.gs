@@ -4,7 +4,7 @@
 var ALLOWED_APPS = ['NagoyaApp', 'nagoya-fukushi-navi'];
 // 通知メールの宛先（複数の場合はカンマ区切り）
 var NOTIFY_TO = 'a.nishihara@wappa-no-kai.jp';
-var HEADERS = ['タイムスタンプ', '使いやすさ', 'ご感想・改善点', '返信用メールアドレス'];
+var HEADERS = ['タイムスタンプ', '使いやすさ', 'ご感想・改善点', '返信用メールアドレス', 'お名前', '年齢'];
 
 // スプレッドシートの数式として解釈されないよう、先頭の記号を無効化する
 function sanitize(value) {
@@ -29,14 +29,21 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
     }
 
+    // 既存タブには新しい見出し（お名前・年齢）を末尾に追加する
+    if (sheet.getLastColumn() < HEADERS.length) {
+      sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    }
+
     var rating = sanitize(params.rating);
     var comment = sanitize(params.comment);
     var email = sanitize(params.email);
-    sheet.appendRow([new Date(), rating, comment, email]);
+    var name = sanitize(params.name);
+    var age = sanitize(params.age);
+    sheet.appendRow([new Date(), rating, comment, email, name, age]);
 
     // 通知メールの失敗でフィードバックの保存結果は変えない
     try {
-      notifyOwner(appName, rating, comment, email, ss.getUrl());
+      notifyOwner(appName, rating, comment, email, name, age, ss.getUrl());
     } catch (mailError) {
       console.error('Notification failed: ' + mailError);
     }
@@ -49,11 +56,13 @@ function doPost(e) {
   }
 }
 
-function notifyOwner(appName, rating, comment, email, sheetUrl) {
+function notifyOwner(appName, rating, comment, email, name, age, sheetUrl) {
   var to = NOTIFY_TO;
   var body = [
     'アプリ: ' + appName,
     '使いやすさ: ' + rating,
+    'お名前: ' + (name || '（未入力）'),
+    '年齢: ' + (age || '（未入力）'),
     '返信用メールアドレス: ' + (email || '（未入力）'),
     '',
     'ご感想・改善点:',

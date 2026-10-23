@@ -32,6 +32,8 @@ export default function FeedbackForm({ appName: defaultAppName }) {
   const [usability, setUsability] = useState('');
   const [comments, setComments] = useState('');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
   const [noticeIsError, setNoticeIsError] = useState(false);
@@ -69,6 +71,8 @@ export default function FeedbackForm({ appName: defaultAppName }) {
         rating: usability,
         comment: comments.trim(),
         email: normalizedEmail,
+        name: name.trim(),
+        age,
       });
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -85,6 +89,8 @@ export default function FeedbackForm({ appName: defaultAppName }) {
 
       setComments('');
       setEmail('');
+      setName('');
+      setAge('');
       setUsability('');
       setNotice('ご意見ありがとうございました。送信しました。');
     } catch (error) {
@@ -152,6 +158,28 @@ export default function FeedbackForm({ appName: defaultAppName }) {
                 multiline
                 maxLength={1000}
                 textAlignVertical="top"
+              />
+
+              <Text style={styles.label}>お名前 <Text style={styles.optional}>任意</Text></Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="例：名古屋 太郎"
+                placeholderTextColor={colors.textTertiary}
+                autoComplete="name"
+                maxLength={50}
+              />
+
+              <Text style={styles.label}>年齢 <Text style={styles.optional}>任意</Text></Text>
+              <TextInput
+                style={styles.input}
+                value={age}
+                onChangeText={text => setAge(text.replace(/[^0-9]/g, ''))}
+                placeholder="例：35"
+                placeholderTextColor={colors.textTertiary}
+                keyboardType="number-pad"
+                maxLength={3}
               />
 
               <Text style={styles.label}>返信用メールアドレス <Text style={styles.optional}>任意</Text></Text>
