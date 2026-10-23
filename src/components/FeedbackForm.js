@@ -35,6 +35,7 @@ export default function FeedbackForm({ appName: defaultAppName }) {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
   const [notice, setNotice] = useState('');
   const [noticeIsError, setNoticeIsError] = useState(false);
 
@@ -45,6 +46,7 @@ export default function FeedbackForm({ appName: defaultAppName }) {
   };
 
   const submit = async () => {
+    if (submitting || sent) return;
     const normalizedEmail = email.trim();
     if (!appName) {
       setNotice('アプリを判別できません。URLのappNameをご確認ください。');
@@ -92,6 +94,7 @@ export default function FeedbackForm({ appName: defaultAppName }) {
       setName('');
       setAge('');
       setUsability('');
+      setSent(true);
       setNotice('ご意見ありがとうございました。送信しました。');
     } catch (error) {
       console.error('Feedback submission failed:', error);
@@ -205,14 +208,14 @@ export default function FeedbackForm({ appName: defaultAppName }) {
               )}
 
               <TouchableOpacity
-                style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+                style={[styles.submitButton, (submitting || sent) && styles.submitButtonDisabled]}
                 onPress={submit}
-                disabled={submitting}
+                disabled={submitting || sent}
                 activeOpacity={0.8}
               >
                 {submitting
                   ? <ActivityIndicator color="#FFFFFF" />
-                  : <Text style={styles.submitButtonText}>送信する</Text>}
+                  : <Text style={styles.submitButtonText}>{sent ? '送信済' : '送信する'}</Text>}
               </TouchableOpacity>
             </ScrollView>
           </View>
