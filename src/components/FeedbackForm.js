@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, font, radius, spacing } from '../theme';
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlXW4-wr3yQBRpleas3YjfR5GzNfDhQ8krP5ldhzE6EXPOMdkFtPypOyWNGJZevx-l/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFCaaWabD78GxAySMPYeOkL38dx4Hpr4GuCCpl8VWtjy1aJHcChbRXqz8EGe-vWO4/exec';
 const USABILITY_OPTIONS = ['とても使いやすい', '使いやすい', '普通', 'やや使いにくい', '使いにくい'];
 const ALLOWED_APP_NAMES = ['NagoyaApp', 'nagoya-fukushi-navi'];
 
