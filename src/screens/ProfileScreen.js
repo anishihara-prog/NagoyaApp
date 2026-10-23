@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
 import { DISTRICT_LIST } from '../data/districts';
+import FeedbackForm from '../components/FeedbackForm';
 
 const TB = ({ label, active, onPress, style }) => (
   <TouchableOpacity onPress={onPress} style={[styles.tb, active && styles.tbOn, style]} activeOpacity={0.7}>
@@ -388,8 +389,8 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerTxt}>Produce by a.nishihara</Text>
-          <Text style={styles.footerTxt}>mail：a.nishihara@wappa-no-kai.jp</Text>
+          <FeedbackForm appName="NagoyaApp" />
+          <Text style={styles.footerTxt}>Produce by akiko.n</Text>
         </View>
 
         <View style={{ height: 32 }} />
@@ -436,6 +437,6 @@ const styles = StyleSheet.create({
   ctaWrap: { padding: spacing.lg, paddingTop: spacing.md },
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.primaryBg, borderRadius: radius.lg, paddingVertical: 15, borderWidth: 0.5, borderColor: colors.primaryLight },
   ctaTxt: { fontSize: 15, fontWeight: font.semibold, color: colors.primary },
-  footer: { alignItems: 'center', paddingTop: spacing.md },
+  footer: { alignItems: 'center', paddingTop: spacing.md, gap: spacing.sm },
   footerTxt: { fontSize: 11, color: colors.textSecondary },
 });
