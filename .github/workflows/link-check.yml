@@ -105,6 +105,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .github/url-snapshots.json .github/category-snapshots.json reports/latest-report.xlsx
           git diff --cached --quiet || git commit -m "chore: URLスナップショット・レポート更新 $(date +'%Y-%m-%d')"
+          git pull --rebase -X theirs origin "${GITHUB_REF_NAME}"
           git push
 
       # ── 6. 問題があれば Issue に登録 ───────────────────
