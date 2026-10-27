@@ -29,6 +29,9 @@ const SKIP_PATTERNS = [
   // 使っており、GitHub Actionsからのアクセスのみ403＋空ページを返すことがある
   // （2026-08-31時点で確認済み。手動アクセスでは200・正常表示）
   /webc\.sjc\.ne\.jp/,
+  // Google Apps Script のWebアプリ（フィードバック送信先）はPOST専用で、HEAD/GETでは
+  // 403を返すため誤検知になる（2026-10時点でPOSTは200・正常動作を確認済み）
+  /script\.google\.com\/macros\//,
 ];
 
 // 名古屋市トップページの主要タブ（この配下の項目の追加/変更/削除を検知する）
