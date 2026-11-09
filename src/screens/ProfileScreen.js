@@ -390,7 +390,7 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.footer}>
           <FeedbackForm appName="NagoyaApp" />
-          <Text style={styles.footerTxt}>Produce by a.nishihara</Text>
+          <Text style={styles.footerTxt}>Produce by akiko.n</Text>
         </View>
 
         <View style={{ height: 32 }} />
