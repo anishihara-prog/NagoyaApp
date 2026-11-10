@@ -1044,6 +1044,7 @@ export const SERVICES = [
     detail: '【対象年齢】小中学生\n【対象】特別支援学級の児童生徒、通級指導教室の児童生徒、学校教育法施行令第22条の3に該当する児童生徒\n【支給費目】学校給食費、通学費、交流学習交通費、修学旅行費、校外活動費、学用品・通学用品購入費、新入学児童生徒学用品・通学用品購入費、オンライン学習通信費等（所得により認定段階が決まる）\n【所得要件】所得額と生活保護基準需要額の割合で認定（第1・2段階は需要額の2.5倍未満、2人世帯で目安約600万円・給与所得者年収目安約790万円）\n【申請先】在籍する学校（特別支援学級等は6月上旬以降に学校から案内）',
     url: 'https://www.city.nagoya.jp/kodomo/schools/1017010/1017016.html',
     contact: '名古屋市教育委員会 学事課 052-972-3217',
+    extraLinks: [{ url: 'https://www.city.nagoya.jp/kodomo/schools/1017010/1051545.html', label: '特別支援学校・特別支援学級・通級指導教室の設置校一覧' }],
     welnet: false,
     cond: (s) => s.children?.some(c => (c.age||c) >= 6 && (c.age||c) <= 15 && (c.status === 'special' || s.concerns?.includes('child_disability'))),
   },
