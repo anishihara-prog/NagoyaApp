@@ -24,6 +24,7 @@ export const COND_FUNCTIONS = {
   20: (s) => s.income === 'low' || s.income === 'nontax' || s.concerns?.includes('housing_concern'),
   21: (s) => s.employment === 'unemployed' || s.concerns?.includes('work'),
   22: (s) => s.employment === 'unemployed' || s.concerns?.includes('work'),
+  163: (s) => s.children?.some(c => c.status === 'special') || s.concerns?.includes('child_disability'),
   23: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.sit?.includes('disabled'),
   24: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.sit?.includes('disabled'),
   25: (s) => s.disabledMembers?.includes('disabled') || s.disabledMembers?.includes('intellectual') || s.disabledMembers?.includes('mental') || s.disabledMembers?.includes('gray') || s.concerns?.includes('disability_service'),
