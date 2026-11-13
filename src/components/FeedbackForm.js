@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, font, radius, spacing } from '../theme';
+import { GOOGLE_APPS_SCRIPT_URL } from '../config/appsScript';
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFCaaWabD78GxAySMPYeOkL38dx4Hpr4GuCCpl8VWtjy1aJHcChbRXqz8EGe-vWO4/exec';
 const USABILITY_OPTIONS = ['とても使いやすい', '使いやすい', '普通', 'やや使いにくい', '使いにくい'];
 const ALLOWED_APP_NAMES = ['NagoyaApp', 'nagoya-fukushi-navi'];
 
@@ -76,7 +76,7 @@ export default function FeedbackForm({ appName: defaultAppName }) {
         name: name.trim(),
         age,
       });
-      const response = await fetch(SCRIPT_URL, {
+      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': Platform.OS === 'web' ? 'text/plain;charset=UTF-8' : 'application/json',

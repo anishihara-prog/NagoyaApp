@@ -23,6 +23,12 @@ In the output, you'll find options to open the app in a
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
+## 来場者数の集計
+
+ホーム画面の来場者数は、端末・ブラウザごとに1回、Google Apps Script経由で集計します。識別にはアプリ内に保存したランダムIDを使います。アプリの再インストールやブラウザデータの消去後は、別の来場者として数えられる場合があります。
+
+集計を有効にするには、`gas/feedback.gs` の内容を既存のGoogle Apps Scriptに反映し、新しいバージョンとして再デプロイしてください。来場者のIDと初回訪問日時は、アプリごとの`<appName>_Visitors`シートに保存されます。
+
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
 ## Get a fresh project

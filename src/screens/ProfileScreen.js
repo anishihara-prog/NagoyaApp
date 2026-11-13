@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, font } from '../theme';
 import { DISTRICT_LIST } from '../data/districts';
 import FeedbackForm from '../components/FeedbackForm';
+import VisitorCount from '../components/VisitorCount';
 
 const TB = ({ label, active, onPress, style }) => (
   <TouchableOpacity onPress={onPress} style={[styles.tb, active && styles.tbOn, style]} activeOpacity={0.7}>
@@ -146,6 +147,7 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.heroTitle}>あなたの世帯に合った{'\n'}サービスを探す</Text>
           <Text style={styles.heroSub}>詳しく入力するほど、あなたに合ったサービスが絞り込まれます。</Text>
           <Text style={styles.heroDisclaimer}>※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所等でご確認ください。</Text>
+          <VisitorCount appName="NagoyaApp" />
         </View>
 
         {/* ── お住まいの区 ── */}
