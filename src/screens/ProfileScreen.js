@@ -144,10 +144,10 @@ export default function ProfileScreen({ navigation }) {
               <Text style={styles.clearBtnTxt}>入力をクリア</Text>
             </TouchableOpacity>
           </View>
+          <VisitorCount appName="NagoyaApp" />
           <Text style={styles.heroTitle}>あなたの世帯に合った{'\n'}サービスを探す</Text>
           <Text style={styles.heroSub}>詳しく入力するほど、あなたに合ったサービスが絞り込まれます。</Text>
           <Text style={styles.heroDisclaimer}>※ 掲載内容はすべてを網羅しているわけではありません。最新情報は各区役所等でご確認ください。</Text>
-          <VisitorCount appName="NagoyaApp" />
         </View>
 
         {/* ── お住まいの区 ── */}
